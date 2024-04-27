@@ -18,12 +18,12 @@ class ArchiveMember(BaseModel):
 
     @field_validator("datetime", mode="after")
     @classmethod
-    def set_timezone(cls, v: DateTime, info: ValidationInfo) -> DateTime:
-            return v.replace(tzinfo=timezone.utc)
+    def _set_timezone(cls, v: DateTime, info: ValidationInfo) -> DateTime:
+        return v.replace(tzinfo=timezone.utc)
 
     @field_validator("*", mode="before")
     @classmethod
-    def use_default_value(cls, v: Any, info: ValidationInfo) -> Any:
+    def _use_default_value(cls, v: Any, info: ValidationInfo) -> Any:
         if v is None:
-            return cls.model_fields[info.field_name].default # type: ignore
+            return cls.model_fields[info.field_name].default  # type: ignore
         return v
