@@ -31,7 +31,11 @@
 
 ## About
 
-`archivefile` is a wrapper around [`tarfile`](https://docs.python.org/3/library/tarfile.html), [`zipfile`](https://docs.python.org/3/library/zipfile.html), [`py7zr`](https://github.com/miurahr/py7zr), and [`rarfile`](https://github.com/markokr/rarfile). It simplifies archive management tasks by providing a unified interface.
+`archivefile` is a wrapper around [`tarfile`](https://docs.python.org/3/library/tarfile.html), [`zipfile`](https://docs.python.org/3/library/zipfile.html), [`py7zr`](https://github.com/miurahr/py7zr), and [`rarfile`](https://github.com/markokr/rarfile).
+
+The above libraries are excellent when you are dealing with a single archive format but things quickly get annoying when you have a bunch of mixed archives such as `.zip`, `.7z`, `.cbr`, `.tar.gz`, etc because each library has a slightly different syntax and quirks which you need to deal with.
+
+`archivefile` wraps the common methods from the above libraries to provide a unified interface that takes care of said differences under the hood. However, it's not as powerful as the libraries it wraps due to lack of support for features that are unique to a specific archive format and library.
 
 ## Installation
 
@@ -43,15 +47,30 @@ pip install archivefile
 
 ## Usage
 
+`archivefile` offers a single class called `ArchiveFile` to deal with various archive formats. Some examples are given below:
+
 ```py
 from archivefile import ArchiveFile
 
 with ArchiveFile("archive.tar", "w") as archive:
     archive.extract("member.txt") # Extract a single member of the archive
 
-with ArchiveFile("archive.tar", "w") as archive:
+with ArchiveFile("archive.zip", "w") as archive:
     archive.extractall(destination="~/output") # Extract all members
 
-with ArchiveFile("archive.tar") as archive:
+with ArchiveFile("archive.cb7") as archive:
     archive.read_text("member.txt") # Read a member of the archive
+
+with ArchiveFile("archive.rar") as archive:
+    archive.get_members() # Get a tuple of all the members of the archive
 ```
+
+Refer to the [api reference](https://ravencentric.github.io/archivefile/api-reference/archivefile/) for more details.
+
+## Docs
+
+Checkout the complete documentation [here](https://ravencentric.github.io/archivefile/).
+
+## License
+
+Distributed under the [Unlicense](https://choosealicense.com/licenses/unlicense/) License. See [UNLICENSE](https://github.com/Ravencentric/archivefile/blob/main/UNLICENSE) for more information.

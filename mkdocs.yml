@@ -42,6 +42,8 @@ plugins:
         python:
           import:
             - https://docs.python.org/3/objects.inv
+            - https://typing-extensions.readthedocs.io/en/latest/objects.inv
+            - https://docs.pydantic.dev/latest/objects.inv
           paths: [src]
           options:
             allow_inspection: false
