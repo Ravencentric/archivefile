@@ -4,10 +4,16 @@ from enum import Enum, IntEnum
 
 
 class ZipCompression(IntEnum):
+    """Compression algorithms for ZipFile"""
+
     ZIP_STORED = 0
+    """The numeric constant for an uncompressed archive member."""
     ZIP_DEFLATED = 8
+    """The numeric constant for the usual ZIP compression method. This requires the [zlib](https://docs.python.org/3/library/zlib.html#module-zlib) module."""
     ZIP_BZIP2 = 12
+    """The numeric constant for the BZIP2 compression method. This requires the [bz2](https://docs.python.org/3/library/bz2.html#module-bz2) module."""
     ZIP_LZMA = 14
+    """The numeric constant for the LZMA compression method. This requires the [lzma](https://docs.python.org/3/library/lzma.html#module-lzma) module."""
 
 
 class CommonExtensions(tuple[str, ...], Enum):

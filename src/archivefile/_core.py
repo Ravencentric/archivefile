@@ -31,6 +31,7 @@ class ArchiveFile:
         self,
         file: StrPath,
         mode: OpenArchiveMode = "r",
+        *,
         password: str | None = None,
         **kwargs: Any,
     ) -> None:
@@ -152,6 +153,17 @@ class ArchiveFile:
         Returns
         -------
         ArchiveMember
+            Represents a member of the archive.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.tar") as archive:
+            archive.get_member("README.md")
+            # ArchiveMember(name='README.md', size=3799, compressed_size=3799, datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc), checksum=5251, is_dir=False, is_file=True)
+        ```
         """
 
         member = member.as_posix() if isinstance(member, Path) else member
@@ -217,6 +229,20 @@ class ArchiveFile:
         Returns
         -------
         tuple[ArchiveMember, ...]
+            Members of the archive as a tuple of ArchiveMember objects.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.tar") as archive:
+            archive.get_members()
+            # (
+            #     ArchiveMember(name="project/pyproject.toml", size=1920, compressed_size=1920, datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc), checksum=6038, is_dir=False, is_file=True),
+            #     ArchiveMember(name="project/src", size=0, compressed_size=0, datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc), checksum=4927, is_dir=True, is_file=False),
+            # )
+        ```
         """
         if isinstance(self._handler, TarFile):
             names = self._handler.getnames()
@@ -242,6 +268,20 @@ class ArchiveFile:
         Returns
         -------
         tuple[str, ...]
+            Members of the archive as a tuple of strings.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.tar") as archive:
+            archive.get_names()
+            # (
+            #     "project/pyproject.toml",
+            #     "project/src",
+            # )
+        ```
         """
         if isinstance(self._handler, TarFile):
             return tuple(self._handler.getnames())
@@ -273,6 +313,33 @@ class ArchiveFile:
         Returns
         -------
         None
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.tar") as archive:
+            archive.tree()
+            # hello-world
+            # ├── .github
+            # │   └── workflows
+            # │       ├── docs.yml
+            # │       ├── release.yml
+            # │       └── test.yml
+            # ├── .gitignore
+            # ├── docs
+            # │   └── index.md
+            # ├── pyproject.toml
+            # ├── README.md
+            # ├── src
+            # │   └── hello-world
+            # │       └── __init__.py
+            # ├── tests
+            # │   ├── test_hello_world.py
+            # │   └── __init__.py
+            # └── LICENSE
+        ```
         """
         tree = list_to_tree(self.get_names())  # type: ignore
         tree.show(max_depth=max_depth, style=style)
@@ -294,9 +361,25 @@ class ArchiveFile:
         -------
         Path
             The path to the extracted file.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.zip") as archive:
+            file = archive.extract("hello-world/pyproject.toml")
+            file.read_text()
+            # [tool.poetry]
+            # name = "hello-world"
+            # version = "0.1.0"
+            # description = ""
+            # readme = "README.md"
+            # packages = [{include = "hello_world", from = "src"}]
+        ```
         """
         destination = destination if isinstance(destination, Path) else Path(destination)
-        destination.expanduser().resolve()
+        destination = destination.expanduser().resolve()
         destination.mkdir(parents=True, exist_ok=True)
 
         if isinstance(member, ArchiveMember):
@@ -345,9 +428,29 @@ class ArchiveFile:
         -------
         Path
             The path to the destination directory.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.zip") as archive:
+            outdir = archive.extractall()
+
+        for file in outdir.rglob("*"):
+            print(file)
+            # /source/hello-world
+            # /source/hello-world/pyproject.toml
+            # /source/hello-world/README.md
+            # /source/hello-world/src
+            # /source/hello-world/tests
+            # /source/hello-world/src/hello_world
+            # /source/hello-world/src/hello_world/__init__.py
+            # /source/hello-world/tests/__init__.py
+        ```
         """
         destination = destination if isinstance(destination, Path) else Path(destination)
-        destination.expanduser().resolve()
+        destination = destination.expanduser().resolve()
         destination.mkdir(parents=True, exist_ok=True)
 
         members = (
@@ -415,8 +518,23 @@ class ArchiveFile:
 
         References
         ----------
-        Encodings: https://docs.python.org/3/library/codecs.html#standard-encodings
-        Error Handlers: https://docs.python.org/3/library/codecs.html#error-handlers
+        - [Standard Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings)
+        - [Error Handlers](https://docs.python.org/3/library/codecs.html#error-handlers)
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.zip") as archive:
+            archive.read_text("hello-world/pyproject.toml")
+            # [tool.poetry]
+            # name = "hello-world"
+            # version = "0.1.0"
+            # description = ""
+            # readme = "README.md"
+            # packages = [{include = "hello_world", from = "src"}]
+        ```
         """
         tmpdir = TemporaryDirectory()
         data = self.extract(member, destination=tmpdir.name).read_text(encoding=encoding, errors=errors)
@@ -436,12 +554,22 @@ class ArchiveFile:
         Parameters
         ----------
         member: StrPath, ArchiveMember
-            Full name of the member to extract or an ArchiveMember object.
+            Name or path of the member as present in the archive or an ArchiveMember object.
 
         Returns
         -------
         bytes
             The contents of the file as bytes.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.zip") as archive:
+            archive.read_bytes("hello-world/pyproject.toml")
+            # b'[tool.poetry]\\r\\nname = "hello-world"\\r\\nversion = "0.1.0"\\r\\ndescription = ""\\r\\nreadme = "README.md"\\r\\npackages = [{include = "hello_world", from = "src"}]\\r\\n'
+        ```
         """
         tmpdir = TemporaryDirectory()
         data = self.extract(member, destination=tmpdir.name).read_bytes()
@@ -483,6 +611,22 @@ class ArchiveFile:
         Returns
         -------
         None
+
+        Examples
+        --------
+        ```py
+        from pathlib import Path
+
+        from archivefile import ArchiveFile
+
+        file = Path("hello.txt")
+        file.write_text("world")
+
+        with ArchiveFile("newarchive.zip", "w") as archive:
+            archive.write(file)
+            archive.get_names()
+            # ('hello.txt',)
+        ```
         """
 
         file = file if isinstance(file, Path) else Path(file)
@@ -556,9 +700,22 @@ class ArchiveFile:
 
         References
         ----------
-        Encodings: https://docs.python.org/3/library/codecs.html#standard-encodings
-        Error Handlers: https://docs.python.org/3/library/codecs.html#error-handlers
-        Newlines: https://docs.python.org/3/library/functions.html#open
+        - [Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings)
+        - [Error Handlers](https://docs.python.org/3/library/codecs.html#error-handlers)
+        - [newline](https://docs.python.org/3/library/functions.html#open)
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("newarchive.zip", "w") as archive:
+            archive.write_text("hello world", arcname="textworld.txt")
+            archive.get_names()
+            # ('textworld.txt',)
+            archive.read_text("textworld.txt")
+            # 'hello world'
+        ```
         """
 
         arcname = Path(arcname)
@@ -590,7 +747,7 @@ class ArchiveFile:
         Parameters
         ----------
         data: str
-            The text data to write to the archive.
+            The bytes data to write to the archive.
         arcname : StrPath, optional
             The name which the file will have in the archive.
         compression_type : ZipCompression, optional
@@ -605,6 +762,19 @@ class ArchiveFile:
         Returns
         -------
         None
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("newarchive.zip", "w") as archive:
+            archive.write_bytes(b"hello world", arcname="bytesworld.txt")
+            archive.get_names()
+            # ('bytesworld.txt',)
+            archive.read_bytes("bytesworld.txt")
+            # b'hello world'
+        ```
         """
 
         arcname = Path(arcname)
@@ -658,6 +828,22 @@ class ArchiveFile:
         Returns
         -------
         None
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.tar.gz", "w:gz") as archive:
+            archive.writeall(dir="hello-world/", glob="*.py")
+            archive.tree()
+            # hello-world
+            # ├── src
+            # │   └── hello_world
+            # │       └── __init__.py
+            # └── tests
+            #     └── __init__.py
+        ```
         """
 
         dir = dir.expanduser().resolve() if isinstance(dir, Path) else Path(dir).expanduser().resolve()

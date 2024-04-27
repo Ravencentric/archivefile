@@ -47,7 +47,7 @@ def is_archive(file: StrPath) -> bool:
     Parameters
     ---------
     file : StrPath
-        Path to the archive file. This must be an existing file.
+        Path to the archive file.
 
     Returns
     -------

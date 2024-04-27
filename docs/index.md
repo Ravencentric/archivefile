@@ -63,6 +63,9 @@ with ArchiveFile("archive.cb7") as archive:
 
 with ArchiveFile("archive.rar") as archive:
     archive.get_members() # Get a tuple of all the members of the archive
+
+with ArchiveFile("archive.zip", "w") as archive:
+    archive.write("bar.txt") # write bar.txt to archive
 ```
 
 Refer to the [api reference](https://ravencentric.github.io/archivefile/api-reference/archivefile/) for more details.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from archivefile._core import ArchiveFile
+from archivefile._enums import ZipCompression
 from archivefile._exceptions import ArchiveFileError, UnsupportedArchiveOperation
 from archivefile._models import ArchiveMember
 from archivefile._types import OpenArchiveMode, StrPath
@@ -18,4 +19,5 @@ __all__ = [
     "is_archive",
     "StrPath",
     "OpenArchiveMode",
+    "ZipCompression",
 ]
