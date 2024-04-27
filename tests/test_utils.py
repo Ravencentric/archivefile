@@ -79,8 +79,8 @@ def test_filter_kwargs() -> None:
 def test_is_archive() -> None:
     assert is_archive("tests/test_data/source_BEST.rar") is True
     assert is_archive("tests/test_data/source_PPMD.zip") is True
-    assert is_archive(r"src\archivefile\__init__.py") is False
-    assert is_archive(r"non-existent-file.py") is False
+    assert is_archive("src/archivefile/__init__.py") is False
+    assert is_archive("non-existent-file.py") is False
 
 
 def test_check_extension() -> None:
