@@ -46,7 +46,6 @@ plugins:
           options:
             allow_inspection: false
             docstring_style: numpy
-            members: true
             show_root_heading: true
             show_root_full_path: false
             show_signature_annotations: true
