@@ -55,8 +55,8 @@ from archivefile import ArchiveFile
 with ArchiveFile("archive.tar") as archive:
     archive.extract("member.txt") # Extract a single member of the archive
 
-with ArchiveFile("archive.zip") as archive:
-    archive.extractall(destination="~/output") # Extract all members
+with ArchiveFile("archive.zip", "w") as archive:
+    archive.extractall(destination="./archive/") # Extract all members
 
 with ArchiveFile("archive.cb7") as archive:
     archive.read_text("member.txt") # Read a member of the archive

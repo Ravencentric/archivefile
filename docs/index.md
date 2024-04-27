@@ -26,7 +26,7 @@
 
 * [About](#about)
 * [Installation](#installation)
-* [Docs](#docs)
+* [Usage](#usage)
 * [License](#license)
 
 ## About
@@ -56,7 +56,7 @@ with ArchiveFile("archive.tar", "w") as archive:
     archive.extract("member.txt") # Extract a single member of the archive
 
 with ArchiveFile("archive.zip", "w") as archive:
-    archive.extractall(destination="~/output") # Extract all members
+    archive.extractall(destination="./archive/") # Extract all members
 
 with ArchiveFile("archive.cb7") as archive:
     archive.read_text("member.txt") # Read a member of the archive
