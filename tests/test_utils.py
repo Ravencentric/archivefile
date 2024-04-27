@@ -14,7 +14,6 @@ def test_filter_kwargs() -> None:
         "allowZip64": True,
         "compresslevel": None,
         "strict_timestamps": True,
-        "metadata_encoding": None,
     }
 
     tarfile_kwargs = {
@@ -51,7 +50,6 @@ def test_filter_kwargs() -> None:
         "allowZip64": True,
         "compresslevel": None,
         "strict_timestamps": True,
-        "metadata_encoding": None,
     }
 
     assert filter_kwargs(TarFile, kwargs=kwargs) == {
