@@ -61,15 +61,15 @@ class ArchiveFile:
         extensions = archive.suffixes
         kwargs = self._kwargs
         tarfile_mode = self._mode
-        mode = self._mode[0] # reduce stuff like `r:gz` or `w:gz` down to `r` and `w` for non tarfiles
+        mode = self._mode[0]  # reduce stuff like `r:gz` or `w:gz` down to `r` and `w` for non tarfiles
         write = not mode.startswith("r")
 
         if not archive.exists():
             if write:
                 if check_extension(extensions, CommonExtensions.TAR):
-                        self._handler = tarfile.open(
-                            archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs)
-                        )  # type: ignore
+                    self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))  # type: ignore
+                    # https://docs.python.org/3/library/tarfile.html#supporting-older-python-versions
+                    self._handler.extraction_filter = getattr(tarfile, "data_filter", (lambda member, path: member))
 
                 elif check_extension(extensions, CommonExtensions.ZIP):
                     self._handler = ZipFile(archive, mode=mode, **filter_kwargs(ZipFile, kwargs=kwargs))  # type: ignore
@@ -98,7 +98,7 @@ class ArchiveFile:
         elif is_7zfile(archive):
             if mode == "x":
                 raise FileExistsError(archive)
-            
+
             self._handler = SevenZipFile(
                 archive, mode=mode, password=self._password, **filter_kwargs(SevenZipFile, kwargs=kwargs)
             )  # type: ignore
@@ -274,9 +274,8 @@ class ArchiveFile:
         -------
         None
         """
-        tree = list_to_tree(self.get_names()) # type: ignore
+        tree = list_to_tree(self.get_names())  # type: ignore
         tree.show(max_depth=max_depth, style=style)
-
 
     @validate_call
     def extract(self, member: StrPath | ArchiveMember, destination: StrPath = Path.cwd()) -> Path:
@@ -351,19 +350,21 @@ class ArchiveFile:
         destination.expanduser().resolve()
         destination.mkdir(parents=True, exist_ok=True)
 
-
         members = (
             [
                 member.relative_to(member.anchor).as_posix()
                 if isinstance(member, Path)
-                else member.name if isinstance(member, ArchiveMember)
+                else member.name
+                if isinstance(member, ArchiveMember)
                 else member
                 for member in members
-            ] if members else None
+            ]
+            if members
+            else None
         )
 
         if isinstance(self._handler, TarFile):
-            self._handler.extractall(path=destination, members=members, filter="data")  # type: ignore
+            self._handler.extractall(path=destination, members=members)  # type: ignore
             return destination
 
         elif isinstance(self._handler, ZipFile):
@@ -391,7 +392,8 @@ class ArchiveFile:
         encoding: str | None = "utf-8",
         errors: Literal[
             "strict", "ignore", "replace", "backslashreplace", "surrogateescape", "xmlcharrefreplace", "namereplace"
-        ] | None = None,
+        ]
+        | None = None,
     ) -> str:
         """
         Open the member in text mode, read it, and close the file.
@@ -489,7 +491,9 @@ class ArchiveFile:
             arcname = file.name
 
         if not file.is_file():
-            raise UnsupportedArchiveOperation(f"The specified file '{file}' either does not exist or is not a regular file!")
+            raise UnsupportedArchiveOperation(
+                f"The specified file '{file}' either does not exist or is not a regular file!"
+            )
 
         if isinstance(self._handler, TarFile):
             self._handler.add(file, arcname=arcname)
@@ -513,8 +517,9 @@ class ArchiveFile:
         encoding: str | None = "utf-8",
         errors: Literal[
             "strict", "ignore", "replace", "backslashreplace", "surrogateescape", "xmlcharrefreplace", "namereplace"
-        ] | None = None,
-        newline: Literal['', '\n', '\r', '\r\n'] | None = None,
+        ]
+        | None = None,
+        newline: Literal["", "\n", "\r", "\r\n"] | None = None,
         compression_type: ZipCompression | None = None,
         compression_level: int | None = None,
     ) -> None:
@@ -658,8 +663,10 @@ class ArchiveFile:
         dir = dir.expanduser().resolve() if isinstance(dir, Path) else Path(dir).expanduser().resolve()
 
         if not dir.is_dir():
-            raise UnsupportedArchiveOperation(f"The specified file '{dir}' either does not exist or is not a regular directory!")
-        
+            raise UnsupportedArchiveOperation(
+                f"The specified file '{dir}' either does not exist or is not a regular directory!"
+            )
+
         if root is None:
             root = dir.parent
         else:
@@ -667,7 +674,7 @@ class ArchiveFile:
 
         if not dir.is_relative_to(root):
             raise ValueError(f"{dir} must be relative to {root}")
-        
+
         files = tuple(dir.rglob(glob)) if recursive else tuple(dir.glob(glob))
 
         for file in files:

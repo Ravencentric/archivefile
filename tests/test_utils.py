@@ -18,30 +18,30 @@ def test_filter_kwargs() -> None:
     }
 
     tarfile_kwargs = {
-    "name": None,
-    "mode": "r",
-    "fileobj": None,
-    "format": None,
-    "tarinfo": None,
-    "dereference": None,
-    "ignore_zeros": None,
-    "encoding": None,
-    "errors": "surrogateescape",
-    "pax_headers": None,
-    "debug": None,
-    "errorlevel": None,
-    "copybufsize": None
+        "name": None,
+        "mode": "r",
+        "fileobj": None,
+        "format": None,
+        "tarinfo": None,
+        "dereference": None,
+        "ignore_zeros": None,
+        "encoding": None,
+        "errors": "surrogateescape",
+        "pax_headers": None,
+        "debug": None,
+        "errorlevel": None,
+        "copybufsize": None,
     }
 
     sevenzipfile_kwargs = {
-    "file": None,
-    "mode": "r",
-    "filters": None,
-    "dereference": None,
-    "password": None,
-    "header_encryption": False,
-    "blocksize": None,
-    "mp": False
+        "file": None,
+        "mode": "r",
+        "filters": None,
+        "dereference": None,
+        "password": None,
+        "header_encryption": False,
+        "blocksize": None,
+        "mp": False,
     }
 
     kwargs = zipfile_kwargs | tarfile_kwargs | sevenzipfile_kwargs
@@ -77,9 +77,10 @@ def test_filter_kwargs() -> None:
         "mp": False,
     }
 
+
 def test_is_archive() -> None:
-    assert is_archive(r"tests\test_data\source_BEST.rar") is True
-    assert is_archive(r"tests\test_data\source_PPMD.zip") is True
+    assert is_archive("tests/test_data/source_BEST.rar") is True
+    assert is_archive("tests/test_data/source_PPMD.zip") is True
     assert is_archive(r"src\archivefile\__init__.py") is False
     assert is_archive(r"non-existent-file.py") is False
 

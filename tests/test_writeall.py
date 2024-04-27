@@ -19,13 +19,14 @@ modes = (
     "a:",
 )
 extensions = CommonExtensions.ZIP + CommonExtensions.TAR + CommonExtensions.SEVENZIP
-archive_dir = Path(r"src\archivefile")
+archive_dir = Path("src/archivefile").resolve()
+
 
 def test_writeall(tmp_path: Path) -> None:
     for extension in CommonExtensions.ZIP:
         for mode in modes:
             dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            with ArchiveFile(dir, mode) as archive: # type: ignore
+            with ArchiveFile(dir, mode) as archive:  # type: ignore
                 archive.writeall(archive_dir, glob="*.py")
 
             with ArchiveFile(dir, "r") as archive:
@@ -34,6 +35,7 @@ def test_writeall(tmp_path: Path) -> None:
                 archive.extractall(dest)
 
             assert len(tuple(archive_dir.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
+
 
 def test_writeall_with_root(tmp_path: Path) -> None:
     for extension in CommonExtensions.ZIP:

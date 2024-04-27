@@ -54,7 +54,8 @@ tree = """pyanilist-main
 │   └── __init__.py
 └── UNLICENSE"""
 
-def test_tree(capsys) -> None: # type: ignore
-    with ArchiveFile(r"tests\test_data\source_GNU.tar") as archive:
+
+def test_tree(capsys) -> None:  # type: ignore
+    with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
         archive.tree()
         assert capsys.readouterr().out.strip() == tree.strip()

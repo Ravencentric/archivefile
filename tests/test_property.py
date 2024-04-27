@@ -4,7 +4,7 @@ from archivefile import ArchiveFile
 
 
 def test_properties() -> None:
-    file = r"tests\test_data\source_GNU.tar"
+    file = "tests/test_data/source_GNU.tar"
     with ArchiveFile(file) as archive:
         assert archive.file == Path(file).resolve()
         assert archive.mode == "r"
