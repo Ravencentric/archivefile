@@ -1,10 +1,24 @@
 [tool.poetry]
 name = "archivefile"
-version = "0.1.0"
+version = "0.2.0"
 description = "Unified interface for tar, zip, sevenzip, and rar files"
 authors = ["Raventric <78981416+Ravencentric@users.noreply.github.com>"]
 readme = "README.md"
+license = "Unlicense"
 packages = [{include = "archivefile", from = "src"}]
+keywords = ["archive", "zipfile", "tarfile", "sevenzip", "rarfile", "python"]
+homepage = "https://ravencentric.github.io/archivefile"
+repository = "https://github.com/Ravencentric/archivefile"
+documentation = "https://ravencentric.github.io/archivefile"
+classifiers = [
+    "License :: OSI Approved :: The Unlicense (Unlicense)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
