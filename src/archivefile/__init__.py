@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from archivefile._core import ArchiveFile
 from archivefile._exceptions import ArchiveFileError, UnsupportedArchiveOperation
 from archivefile._models import ArchiveMember
