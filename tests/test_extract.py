@@ -30,9 +30,10 @@ files = (
 
 def test_extract(tmp_path: Path) -> None:
     for file in files:
-            with ArchiveFile(file) as archive:
-                member = archive.extract("pyanilist-main/README.md", destination=tmp_path)
-                assert member.is_file()
+        with ArchiveFile(file) as archive:
+            member = archive.extract("pyanilist-main/README.md", destination=tmp_path)
+            assert member.is_file()
+
 
 def test_extract_without_context_manager(tmp_path: Path) -> None:
     for file in files:
@@ -51,20 +52,18 @@ def test_extract_by_member(tmp_path: Path) -> None:
 
 
 def test_extractall(tmp_path: Path) -> None:
-
     with ZipFile("tests/test_data/source_STORE.zip") as archive:
         archive.extractall(path=tmp_path)
         control = tuple((tmp_path / "pyanilist-main").rglob("*"))
 
     for file in files:
-            with ArchiveFile(file) as archive:
-                folder = archive.extractall(destination=tmp_path) / "pyanilist-main"
-                members = tuple(folder.rglob("*"))
-                assert control == members
-    
+        with ArchiveFile(file) as archive:
+            folder = archive.extractall(destination=tmp_path) / "pyanilist-main"
+            members = tuple(folder.rglob("*"))
+            assert control == members
+
 
 def test_extractall_by_members(tmp_path: Path) -> None:
-
     members = [
         "pyanilist-main/.gitignore",
         "pyanilist-main/.pre-commit-config.yaml",
@@ -77,4 +76,4 @@ def test_extractall_by_members(tmp_path: Path) -> None:
         with ArchiveFile(file) as archive:
             folder = archive.extractall(destination=tmp_path, members=members) / "pyanilist-main"
             assert len(members) == len(tuple(folder.rglob("*"))) == 5
-            assert members == [member.relative_to(tmp_path).as_posix() for member in folder.rglob("*")]
+            assert sorted(members) == sorted([member.relative_to(tmp_path).as_posix() for member in folder.rglob("*")])
