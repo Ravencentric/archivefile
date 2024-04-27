@@ -55,6 +55,10 @@ jobs:
       - name: Install the project dependencies
         run: poetry install
 
+      - name: Install unrar on MacOS
+        if: matrix.os == 'macos-latest'
+        run: brew install carlocab/personal/unrar
+
       - name: Run tests and generate coverage
         run: |
           poetry run coverage run -m pytest
