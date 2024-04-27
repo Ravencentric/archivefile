@@ -68,7 +68,7 @@ with ArchiveFile("archive.zip", "w") as archive:
     archive.write("bar.txt") # write bar.txt to archive
 ```
 
-Refer to the [api reference](https://ravencentric.github.io/archivefile/api-reference/archivefile/) for more details.
+Refer to the [API reference](https://ravencentric.github.io/archivefile/api-reference/archivefile/) for more details.
 
 ## Docs
 
