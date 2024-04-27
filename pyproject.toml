@@ -1,0 +1,62 @@
+[tool.poetry]
+name = "archivefile"
+version = "0.1.0"
+description = "Unified interface for tar, zip, sevenzip, and rar files"
+authors = ["Raventric <78981416+Ravencentric@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "archivefile", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+rarfile = ">=4.2"
+py7zr = ">=0.21.0"
+typing-extensions = ">=4.11.0"
+pydantic = ">=2.7.0"
+pycryptodomex = ">=3.20.0"
+pyppmd = ">=1.1.0"
+zipfile-deflate64 = "^0.2.0"
+pybcj = ">=1.0.2"
+multivolumefile = ">=0.2.3"
+bigtree = ">=0.17.2"
+brotli = { version = ">=1.1.0", markers = "platform_python_implementation == 'CPython'" }
+brotlicffi =  { version = ">=1.1.0.0", markers = "platform_python_implementation == 'PyPy'" }
+importlib-metadata = { version = ">=7.1.0", python = "<3.10" }
+eval-type-backport = {version = ">=0.1.3", python = "<3.10"}
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.9.0"
+ruff = "^0.3.7"
+pytest = "^8.1.1"
+coverage = "^7.5.0"
+pre-commit = "^3.7.0"
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "^9.5.18"
+mkdocstrings = {extras = ["python"], version = "^0.24.0"}
+mkdocs-autorefs = "^1.0.1"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["I"]
+fixable = ["ALL"]
+
+[tool.mypy]
+strict = true
+pretty = true
+
+[[tool.mypy.overrides]]
+module = ["rarfile"]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+omit = [
+    "src/archivefile/_version.py",
+    "src/archivefile/_compat.py",
+    "tests/*"
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

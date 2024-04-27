@@ -1,0 +1,10 @@
+from archivefile._core import ArchiveFile
+from archivefile._exceptions import ArchiveFileError, UnsupportedArchiveOperation
+from archivefile._models import ArchiveMember
+from archivefile._utils import is_archive
+from archivefile._version import Version, _get_version
+
+__version__ = _get_version()
+__version_tuple__ = Version(*map(int, __version__.split(".")))
+
+__all__ = ["ArchiveFile", "ArchiveFileError", "ArchiveMember", "UnsupportedArchiveOperation", "is_archive"]
