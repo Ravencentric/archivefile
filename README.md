@@ -52,20 +52,21 @@ pip install archivefile
 ```py
 from archivefile import ArchiveFile
 
-with ArchiveFile("archive.tar") as archive:
-    archive.extract("member.txt") # Extract a single member of the archive
+with ArchiveFile("../source.zip") as archive:
+    archive.extract("pyproject.toml", destination="./dest/") # Extract a single member by it's name
+    archive.extractall(destination="./dest/") # Extract all members
+    archive.get_member("pyproject.toml")  # Get the ArchiveMember object for the member by it's name
+    archive.get_members()  # Retrieve all members from the archive as a tuple of ArchiveMember objects
+    archive.get_names()  # Retrieve names of all members in the archive as a tuple of strings
+    archive.read_bytes("pyproject.toml") # Read the contents of the member as bytes
+    archive.read_text("pyproject.toml")  # Read the contents of the member as text
+    archive.tree()  # Print the contents of the archive as a tree.
 
-with ArchiveFile("archive.zip") as archive:
-    archive.extractall(destination="./archive/") # Extract all members
-
-with ArchiveFile("archive.cb7") as archive:
-    archive.read_text("member.txt") # Read a member of the archive
-
-with ArchiveFile("archive.rar") as archive:
-    archive.get_members() # Get a tuple of all the members of the archive
-
-with ArchiveFile("archive.zip", "w") as archive:
-    archive.write("bar.txt") # write bar.txt to archive
+with ArchiveFile("../source.zip", "w") as archive:
+    archive.write("foo.txt", arcname="bar.txt")  # Write foo.txt to the archive as bar.txt
+    archive.writeall("./src/") # Recursively write the ./src/ directory to the archive
+    archive.write_text("spam and eggs", arcname="recipe.txt") # Write a string to the archive as recipe.txt
+    archive.write_bytes(b"0101001010100101", arcname="terminator.py")  # Write bytes to the archive as terminator.py
 ```
 
 Refer to the [API reference](https://ravencentric.github.io/archivefile/api-reference/archivefile/) for more details.

@@ -24,8 +24,6 @@ from archivefile._utils import check_extension, filter_kwargs
 
 
 class ArchiveFile:
-    """The ArchiveFile Class provides a unified interface to zip, tar, rar, and 7zip archives."""
-
     @validate_call
     def __init__(
         self,
@@ -499,7 +497,7 @@ class ArchiveFile:
         | None = None,
     ) -> str:
         """
-        Open the member in text mode, read it, and close the file.
+        Read the member in text mode.
 
         Parameters
         ----------
@@ -549,7 +547,7 @@ class ArchiveFile:
     @validate_call
     def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:
         """
-        Open the member in bytes mode, read it, and close the file.
+        Read the member in bytes mode.
 
         Parameters
         ----------
@@ -742,7 +740,7 @@ class ArchiveFile:
         compression_level: int | None = None,
     ) -> None:
         """
-        Write the binary `data` to a file within the archive named `arcname`.
+        Write the bytes `data` to a file within the archive named `arcname`.
 
         Parameters
         ----------
