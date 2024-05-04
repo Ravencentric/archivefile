@@ -894,7 +894,7 @@ class ArchiveFile:
             members = archive.get_names()
             print(members)
             # ('terminator.py',)
-            data = archive.read_bytes("recipe.txt")
+            data = archive.read_bytes("terminator.py")
             print(data)
             # b"010010100101"
         ```
