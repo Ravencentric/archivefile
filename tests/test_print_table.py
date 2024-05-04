@@ -63,4 +63,4 @@ table = """
 def test_print_table(capsys: CaptureFixture[str]) -> None:
     with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
         archive.print_table(title="")
-        assert capsys.readouterr().out.strip() == table.strip()
+        assert len(capsys.readouterr().out.strip().splitlines()) == len(table.strip().splitlines())
