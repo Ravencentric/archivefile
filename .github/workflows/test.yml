@@ -53,7 +53,7 @@ jobs:
           path: ./.venv
 
       - name: Install the project dependencies
-        run: poetry install
+        run: poetry install --all-extras
 
       - name: Install unrar on MacOS
         if: matrix.os == 'macos-latest'

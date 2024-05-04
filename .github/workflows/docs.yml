@@ -48,7 +48,7 @@ jobs:
           path: ./.venv
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --all-extras
 
       - name: Deploy docs
         run: poetry run mkdocs gh-deploy --force
