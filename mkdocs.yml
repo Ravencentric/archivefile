@@ -47,6 +47,7 @@ plugins:
             - https://rich.readthedocs.io/en/stable/objects.inv
             - https://rarfile.readthedocs.io/objects.inv
             - https://py7zr.readthedocs.io/en/latest/objects.inv
+            - https://bigtree.readthedocs.io/en/stable/objects.inv
           paths: [src]
           options:
             allow_inspection: false

@@ -2101,10 +2101,10 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 
 [extras]
 all = ["bigtree", "rich"]
-table = ["rich"]
-tree = ["bigtree"]
+bigtree = ["bigtree"]
+rich = ["rich"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9"
-content-hash = "7d1057b549546c17f3ff14a44eacf8d8d23182af64d83b189432c2a12ae51dbd"
+content-hash = "f9b2bc2e70c87403f862464867ab0ead4a8032e078486bc0155de133c5c20b3d"

@@ -325,6 +325,15 @@ class ArchiveFile:
         -------
         None
 
+        Notes
+        -----
+        The [`bigtree`](https://pypi.org/p/bigtree/) dependency is required to use this method.
+
+        You can install it via either of these commands:
+
+        - `pip install archivefile[bigtree]`
+        - `pip install archivefile[all]`
+
         Examples
         --------
         ```py
@@ -343,7 +352,10 @@ class ArchiveFile:
             #         └── __init__.py
         ```
         """
-        from bigtree.tree.construct import list_to_tree
+        try:
+            from bigtree.tree.construct import list_to_tree
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError("The 'print_tree()' method requires the 'bigtree' dependency.")
 
         paths = [f"{self.file.name}/{member}" for member in self.get_names()]
         tree = list_to_tree(paths)  # type: ignore
@@ -379,6 +391,15 @@ class ArchiveFile:
         -------
         None
 
+        Notes
+        -----
+        The [`rich`](https://pypi.org/p/rich/) dependency is required to use this method.
+
+        You can install it via either of these commands:
+
+        - `pip install archivefile[rich]`
+        - `pip install archivefile[all]`
+
         Examples
         --------
         ```py
@@ -400,9 +421,12 @@ class ArchiveFile:
             # | hello-world/tests/__init__.py           | 2024-05-02T09:41:24+00:00 | File   | 0B   | 0B              |
         ```
         """
-        from rich import box as RichBox
-        from rich import print as richprint
-        from rich.table import Table as RichTable
+        try:
+            from rich import box as RichBox
+            from rich import print as richprint
+            from rich.table import Table as RichTable
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError("The 'print_table()' method requires the 'rich' dependency.")
 
         if title is None:
             title = self.file.name

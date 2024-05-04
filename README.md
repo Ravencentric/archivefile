@@ -41,9 +41,31 @@ The above libraries are excellent when you are dealing with a single archive for
 
 `archivefile` is available on [PyPI](https://pypi.org/project/archivefile/), so you can simply use [pip](https://github.com/pypa/pip) to install it.
 
-```sh
-pip install archivefile
-```
+1. Without optional dependencies:
+
+    ```sh
+    pip install archivefile
+    ```
+
+2. With optional dependencies:
+
+    - Required for [`ArchiveFile.print_tree()`](https://ravencentric.github.io/archivefile/api-reference/archivefile/#archivefile.ArchiveFile.print_tree)
+
+        ```sh
+        pip install archivefile[bigtree]
+        ```
+
+    - Required for [`ArchiveFile.print_table()`](https://ravencentric.github.io/archivefile/api-reference/archivefile/#archivefile.ArchiveFile.print_table)
+
+        ```sh
+        pip install archivefile[rich]
+        ```
+
+3. With all dependencies:
+
+    ```sh
+    pip install archivefile[all]
+    ```
 
 ## Usage
 
