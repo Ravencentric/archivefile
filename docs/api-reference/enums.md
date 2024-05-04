@@ -1,3 +1,3 @@
-::: archivefile.ZipCompression
+::: archivefile.CompressionType
     options:
         members: true

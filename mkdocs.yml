@@ -44,6 +44,9 @@ plugins:
             - https://docs.python.org/3/objects.inv
             - https://typing-extensions.readthedocs.io/en/latest/objects.inv
             - https://docs.pydantic.dev/latest/objects.inv
+            - https://rich.readthedocs.io/en/stable/objects.inv
+            - https://rarfile.readthedocs.io/objects.inv
+            - https://py7zr.readthedocs.io/en/latest/objects.inv
           paths: [src]
           options:
             allow_inspection: false
@@ -78,6 +81,7 @@ nav:
   - Home: index.md
   - API Reference:
       - ArchiveFile: api-reference/archivefile.md
+      - Models: api-reference/models.md
       - Utils: api-reference/utils.md
       - Enums: api-reference/enums.md
       - Types: api-reference/types.md

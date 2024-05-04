@@ -1,12 +1,8 @@
-::: archivefile.StrPath
-::: archivefile.OpenArchiveMode
-::: archivefile.ArchiveMember
-    options:
-        members:
-            - checksum
-            - compressed_size
-            - datetime
-            - is_dir
-            - is_file
-            - name
-            - size
+::: archivefile._types.StrPath
+::: archivefile._types.OpenArchiveMode
+::: archivefile._types.TreeStyle
+::: archivefile._types.TableStyle
+::: archivefile._types.SortBy
+::: archivefile._types.ErrorHandler
+::: archivefile._types.CompressionLevel
+

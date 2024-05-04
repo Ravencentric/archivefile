@@ -28,10 +28,12 @@ files = (
     Path("tests/test_data/source_STORE.zip"),
 )
 
+
 def test_get_members() -> None:
     for file in files:
         with ArchiveFile(file) as archive:
             assert len(archive.get_members()) == 53
+
 
 def test_get_members_without_context_manager() -> None:
     for file in files:
@@ -61,12 +63,14 @@ def test_member_and_names() -> None:
             names = tuple([member.name for member in archive.get_members()])
             assert archive.get_names() == names
 
+
 def test_members_and_names_without_context_manager() -> None:
     for file in files:
         archive = ArchiveFile(file)
         names = tuple([member.name for member in archive.get_members()])
         assert archive.get_names() == names
         archive.close()
+
 
 def test_get_member_files() -> None:
     with ArchiveFile("tests/test_data/source_BEST.rar") as archive:

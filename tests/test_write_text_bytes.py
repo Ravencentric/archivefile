@@ -32,6 +32,7 @@ def test_write_text(tmp_path: Path) -> None:
             with ArchiveFile(dir, "r") as archive:
                 assert archive.read_text("test.txt") == data
 
+
 def test_write_bytes(tmp_path: Path) -> None:
     for extension in extensions:
         for mode in modes:

@@ -35,6 +35,7 @@ def test_write_zip_str(tmp_path: Path) -> None:
             with ArchiveFile(archive_file) as archive:
                 assert archive.read_text(file.name) == text
 
+
 def test_write_zip_bytes(tmp_path: Path) -> None:
     for extension in CommonExtensions.ZIP:
         for mode in modes:
@@ -147,7 +148,6 @@ def test_write_tar_bytes_by_arcname(tmp_path: Path) -> None:
                 assert archive.read_bytes(file.resolve()) == text
 
 
-
 def test_write_7z_str(tmp_path: Path) -> None:
     for extension in CommonExtensions.SEVENZIP:
         for mode in modes:
@@ -162,6 +162,7 @@ def test_write_7z_str(tmp_path: Path) -> None:
 
             with ArchiveFile(archive_file) as archive:
                 assert archive.read_text(file.name) == text
+
 
 def test_write_7z_bytes(tmp_path: Path) -> None:
     for extension in CommonExtensions.SEVENZIP:

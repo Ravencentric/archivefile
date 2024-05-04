@@ -14,6 +14,23 @@ from archivefile._enums import CommonExtensions
 from archivefile._types import StrPath
 
 
+def realpath(path: StrPath) -> Path:
+    """
+    Get the real path of a given file or directory.
+
+    Parameters
+    ----------
+    path : str or Path
+        A string representing a path or a Path object.
+
+    Returns
+    -------
+    Path
+        The path after expanding the user's home directory and resolving any symbolic links.
+    """
+    return path.expanduser().resolve() if isinstance(path, Path) else Path(path).expanduser().resolve()
+
+
 def filter_kwargs(callabe: Callable[..., Any], kwargs: dict[str, Any]) -> dict[str, Any]:
     """
     Filters out keyword arguments that are not accepted by the class constructor.
@@ -54,7 +71,7 @@ def is_archive(file: StrPath) -> bool:
     bool
         True if the archive is supported, False otherwise.
     """
-    file = file.expanduser().resolve() if isinstance(file, Path) else Path(file).expanduser().resolve()
+    file = realpath(file)
 
     if file.exists():
         return is_tarfile(file) or is_zipfile(file) or is_rarfile(file) or is_rarfile_sfx(file) or is_7zfile(file)

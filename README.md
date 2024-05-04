@@ -60,7 +60,8 @@ with ArchiveFile("../source.zip") as archive:
     archive.get_names()  # Retrieve names of all members in the archive as a tuple of strings
     archive.read_bytes("pyproject.toml") # Read the contents of the member as bytes
     archive.read_text("pyproject.toml")  # Read the contents of the member as text
-    archive.tree()  # Print the contents of the archive as a tree.
+    archive.print_tree()  # Print the contents of the archive as a tree.
+    archive.print_table()  # Print the contents of the archive as a table.
 
 with ArchiveFile("../source.zip", "w") as archive:
     archive.write("foo.txt", arcname="bar.txt")  # Write foo.txt to the archive as bar.txt
