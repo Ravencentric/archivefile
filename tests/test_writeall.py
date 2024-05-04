@@ -32,7 +32,7 @@ def test_writeall(tmp_path: Path) -> None:
             with ArchiveFile(dir, "r") as archive:
                 dest = tmp_path / uuid4().hex[:10]
                 dest.mkdir(parents=True, exist_ok=True)
-                archive.extractall(dest)
+                archive.extractall(destination=dest)
 
             assert len(tuple(archive_dir.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
 
@@ -47,6 +47,6 @@ def test_writeall_with_root(tmp_path: Path) -> None:
             with ArchiveFile(dir, "r") as archive:
                 dest = tmp_path / uuid4().hex[:10]
                 dest.mkdir(parents=True, exist_ok=True)
-                archive.extractall(dest)
+                archive.extractall(destination=dest)
 
             assert len(tuple(archive_dir.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
