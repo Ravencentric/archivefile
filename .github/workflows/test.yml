@@ -65,7 +65,7 @@ jobs:
 
       - name: Run tests and generate coverage
         run: |
-          poetry run coverage run -m pytest -vv -s
+          poetry run coverage run -m pytest -vv
           poetry run coverage xml
 
       - name: Build
