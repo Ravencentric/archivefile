@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import uuid4
 
-from archivefile import ArchiveFile
+from archivefile import ArchiveFile, CompressionType
 from archivefile._enums import CommonExtensions
 
 modes = (
@@ -36,6 +36,22 @@ def test_write_zip_str(tmp_path: Path) -> None:
                 assert archive.read_text(file.name) == text
 
 
+def test_write_zip_str_with_compression(tmp_path: Path) -> None:
+    for extension in CommonExtensions.ZIP:
+        for mode in modes:
+            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
+            file = tmp_path / "README.md"
+            file.touch()
+            text = "\nHello World\n"
+            file.write_text(text)
+
+            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
+                archive.write(file, compression_level=0, compression_type=CompressionType.BZIP2)
+
+            with ArchiveFile(archive_file) as archive:
+                assert archive.read_text(file.name) == text
+
+
 def test_write_zip_bytes(tmp_path: Path) -> None:
     for extension in CommonExtensions.ZIP:
         for mode in modes:
@@ -47,6 +63,22 @@ def test_write_zip_bytes(tmp_path: Path) -> None:
 
             with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
                 archive.write(file)
+
+            with ArchiveFile(archive_file) as archive:
+                assert archive.read_bytes(file.name) == text
+
+
+def test_write_zip_bytes_with_compression(tmp_path: Path) -> None:
+    for extension in CommonExtensions.ZIP:
+        for mode in modes:
+            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
+            file = tmp_path / "README.md"
+            file.touch()
+            text = b"\nHello World\n"
+            file.write_bytes(text)
+
+            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
+                archive.write(file, compression_level=1, compression_type=CompressionType.DEFLATED)
 
             with ArchiveFile(archive_file) as archive:
                 assert archive.read_bytes(file.name) == text

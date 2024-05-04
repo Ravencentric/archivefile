@@ -354,7 +354,7 @@ class ArchiveFile:
         """
         try:
             from bigtree.tree.construct import list_to_tree
-        except ModuleNotFoundError:
+        except ModuleNotFoundError:  # pragma: no cover
             raise ModuleNotFoundError("The 'print_tree()' method requires the 'bigtree' dependency.")
 
         paths = [f"{self.file.name}/{member}" for member in self.get_names()]
@@ -425,7 +425,7 @@ class ArchiveFile:
             from rich import box as RichBox
             from rich import print as richprint
             from rich.table import Table as RichTable
-        except ModuleNotFoundError:
+        except ModuleNotFoundError:  # pragma: no cover
             raise ModuleNotFoundError("The 'print_table()' method requires the 'rich' dependency.")
 
         if title is None:
