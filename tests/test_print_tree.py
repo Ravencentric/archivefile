@@ -1,4 +1,5 @@
 from archivefile import ArchiveFile
+from pytest import CaptureFixture
 
 tree = """
 source_GNU.tar
@@ -58,7 +59,7 @@ source_GNU.tar
 """.strip()
 
 
-def test_print_tree(capsys) -> None:  # type: ignore
+def test_print_tree(capsys: CaptureFixture[str]) -> None:
     with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
         archive.print_tree()
         assert capsys.readouterr().out.strip() == tree.strip()

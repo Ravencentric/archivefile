@@ -1,4 +1,5 @@
 from archivefile import ArchiveFile
+from pytest import CaptureFixture
 
 table = """
 | Name                                              | Date modified             | Type   | Size     | Compressed Size |
@@ -59,7 +60,7 @@ table = """
 """
 
 
-def test_print_table(capsys) -> None:  # type: ignore
+def test_print_table(capsys: CaptureFixture[str]) -> None:
     with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
         archive.print_table(title="")
         assert capsys.readouterr().out.strip() == table.strip()
