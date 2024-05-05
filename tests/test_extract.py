@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import uuid4
 from zipfile import ZipFile
 
 from archivefile import ArchiveFile
@@ -53,13 +54,15 @@ def test_extract_by_member(tmp_path: Path) -> None:
 
 def test_extractall(tmp_path: Path) -> None:
     with ZipFile("tests/test_data/source_STORE.zip") as archive:
-        archive.extractall(path=tmp_path)
-        control = tuple((tmp_path / "pyanilist-main").rglob("*"))
+        dest = tmp_path / uuid4().hex
+        archive.extractall(path=dest)
+        control = tuple((dest / "pyanilist-main").rglob("*"))
 
     for file in files:
         with ArchiveFile(file) as archive:
-            folder = archive.extractall(destination=tmp_path) / "pyanilist-main"
-            members = tuple(folder.rglob("*"))
+            dest2 = tmp_path / uuid4().hex
+            archive.extractall(destination=dest2)
+            members = tuple((dest / "pyanilist-main").rglob("*"))
             assert control == members
 
 

@@ -555,39 +555,46 @@ class ArchiveFile:
         destination = realpath(destination)
         destination.mkdir(parents=True, exist_ok=True)
 
-        members = (
-            [
-                member.relative_to(member.anchor).as_posix()
-                if isinstance(member, Path)
-                else member.name
-                if isinstance(member, ArchiveMember)
-                else member
-                for member in members
-            ]
-            if members
-            else None
-        )
+        names: list[str] = []
+        if members:
+            for member in members:
+                if isinstance(member, ArchiveMember):
+                    names.append(member.name)
+                elif isinstance(member, Path):
+                    names.append(member.relative_to(member.anchor).as_posix())
+                else:
+                    names.append(member)
 
         if isinstance(self._handler, TarFile):
-            self._handler.extractall(path=destination, members=members)  # type: ignore
+            if names:
+                tar_members = [self._handler.getmember(name) for name in names]
+                self._handler.extractall(path=destination, members=tar_members)
+            else:
+                self._handler.extractall(path=destination)
             return destination
 
         elif isinstance(self._handler, ZipFile):
-            self._handler.extractall(
-                path=destination, members=members, pwd=self._password.encode() if self._password else None
-            )
+            password = self._password.encode() if self._password else None
+
+            if names:
+                self._handler.extractall(path=destination, members=names, pwd=password)
+            else:
+                self._handler.extractall(path=destination, pwd=password)
             return destination
 
         elif isinstance(self._handler, SevenZipFile):
             # SevenZipFile doesn't have a members=[...] parameter like the rest
-            if members:
-                self._handler.extract(path=destination, targets=members)
+            if names:
+                self._handler.extract(path=destination, targets=names)
             else:
                 self._handler.extractall(path=destination)
             return destination
 
         else:
-            self._handler.extractall(path=destination, members=members, pwd=self._password)
+            if names:
+                self._handler.extractall(path=destination, members=names, pwd=self._password)
+            else:
+                self._handler.extractall(path=destination, members=names, pwd=self._password)
             return destination
 
     @validate_call
