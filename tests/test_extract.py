@@ -2,7 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 from zipfile import ZipFile
 
-from archivefile import ArchiveFile
+from archivefile import ArchiveFile, ArchiveMember
 
 files = (
     Path("tests/test_data/source_BEST.rar"),
@@ -67,7 +67,7 @@ def test_extractall(tmp_path: Path) -> None:
 
 
 def test_extractall_by_members(tmp_path: Path) -> None:
-    members = [
+    expected = [
         "pyanilist-main/.gitignore",
         "pyanilist-main/.pre-commit-config.yaml",
         "pyanilist-main/mkdocs.yml",
@@ -75,8 +75,16 @@ def test_extractall_by_members(tmp_path: Path) -> None:
         "pyanilist-main/pyproject.toml",
     ]
 
+    members = [
+        "pyanilist-main/.gitignore",
+        Path("pyanilist-main/.pre-commit-config.yaml"),
+        ArchiveMember(name="pyanilist-main/mkdocs.yml"),
+        "pyanilist-main/poetry.lock",
+        "pyanilist-main/pyproject.toml",
+    ]
+
     for file in files:
         with ArchiveFile(file) as archive:
-            folder = archive.extractall(destination=tmp_path, members=members) / "pyanilist-main"
+            folder = archive.extractall(destination=tmp_path, members=members) / "pyanilist-main"  # type: ignore
             assert len(members) == len(tuple(folder.rglob("*"))) == 5
-            assert sorted(members) == sorted([member.relative_to(tmp_path).as_posix() for member in folder.rglob("*")])
+            assert sorted(expected) == sorted([member.relative_to(tmp_path).as_posix() for member in folder.rglob("*")])
