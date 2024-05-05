@@ -78,7 +78,7 @@ class ArchiveFile:
         if not archive.exists():
             if write:
                 if check_extension(extensions, CommonExtensions.TAR):
-                    self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))  # type: ignore
+                    self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))
                     # https://docs.python.org/3/library/tarfile.html#supporting-older-python-versions
                     self._handler.extraction_filter = getattr(tarfile, "data_filter", (lambda member, path: member))
 
@@ -101,7 +101,7 @@ class ArchiveFile:
                 raise FileNotFoundError(archive)
 
         elif is_tarfile(archive):
-            self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))  # type: ignore
+            self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))
 
         elif is_zipfile(archive):
             self._handler = ZipFile(archive, mode=mode, **filter_kwargs(ZipFile, kwargs=kwargs))  # type: ignore
@@ -194,8 +194,8 @@ class ArchiveFile:
             zipinfo = self._handler.getinfo(member)
             return ArchiveMember(
                 name=zipinfo.filename,
-                size=zipinfo.file_size,  # type: ignore
-                compressed_size=zipinfo.compress_size,  # type: ignore
+                size=zipinfo.file_size,
+                compressed_size=zipinfo.compress_size,
                 datetime=datetime(*zipinfo.date_time),
                 checksum=zipinfo.CRC,
                 is_dir=zipinfo.is_dir(),
@@ -208,11 +208,11 @@ class ArchiveFile:
             sevenzipinfo = [fileinfo for fileinfo in member_list if fileinfo.filename == member.removesuffix("/")][0]
             return ArchiveMember(
                 name=sevenzipinfo.filename,
-                size=sevenzipinfo.uncompressed,  # type: ignore
+                size=sevenzipinfo.uncompressed,
                 # Sometimes sevenzip can return 0 for compressed size when there's no compression
                 # in that case we simply return the uncompressed size instead.
-                compressed_size=sevenzipinfo.compressed or sevenzipinfo.uncompressed,  # type: ignore
-                datetime=sevenzipinfo.creationtime,  # type: ignore
+                compressed_size=sevenzipinfo.compressed or sevenzipinfo.uncompressed,
+                datetime=sevenzipinfo.creationtime,
                 checksum=sevenzipinfo.crc32,
                 is_dir=sevenzipinfo.is_directory,
                 is_file=not sevenzipinfo.is_directory,
@@ -223,8 +223,8 @@ class ArchiveFile:
             is_dir = True if rarinfo.filename.endswith("/") else False
             return ArchiveMember(
                 name=rarinfo.filename,
-                size=rarinfo.file_size,  # type: ignore
-                compressed_size=rarinfo.compress_size,  # type: ignore
+                size=rarinfo.file_size,
+                compressed_size=rarinfo.compress_size,
                 datetime=datetime(*rarinfo.date_time),
                 checksum=rarinfo.CRC,
                 is_dir=is_dir,
@@ -358,7 +358,7 @@ class ArchiveFile:
             raise ModuleNotFoundError("The 'print_tree()' method requires the 'bigtree' dependency.")
 
         paths = [f"{self.file.name}/{member}" for member in self.get_names()]
-        tree = list_to_tree(paths)  # type: ignore
+        tree = list_to_tree(paths)
         tree.show(max_depth=max_depth, style=style)
 
     @validate_call

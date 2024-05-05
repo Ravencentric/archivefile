@@ -6,7 +6,7 @@ authors = ["Raventric <78981416+Ravencentric@users.noreply.github.com>"]
 readme = "README.md"
 license = "Unlicense"
 packages = [{ include = "archivefile", from = "src" }]
-keywords = ["archive", "zipfile", "tarfile", "sevenzip", "rarfile", "python"]
+keywords = ["archive", "archivefile", "zipfile", "tarfile", "sevenzip", "rarfile"]
 homepage = "https://ravencentric.github.io/archivefile"
 repository = "https://github.com/Ravencentric/archivefile"
 documentation = "https://ravencentric.github.io/archivefile"
@@ -45,13 +45,13 @@ all = ["bigtree", "rich"]
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
-ruff = "^0.4.2"
+ruff = "^0.4.3"
 pytest = "^8.2.0"
-coverage = "^7.5.0"
+coverage = "^7.5.1"
 pre-commit = "^3.7.0"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs-material = "^9.5.20"
+mkdocs-material = "^9.5.21"
 mkdocstrings = { extras = ["python"], version = "^0.24.0" }
 mkdocs-autorefs = "^1.0.1"
 

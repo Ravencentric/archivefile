@@ -11,7 +11,7 @@ def test_write_rar() -> None:
 
     with pytest.raises(UnsupportedArchiveOperation):
         with ArchiveFile("tests/test_data/source_BEST.rar", "w") as archive:
-            archive.tree()
+            archive.print_tree()
 
 
 def test_write_not_archive() -> None:
