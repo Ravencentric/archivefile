@@ -433,11 +433,11 @@ class ArchiveFile:
 
         members = self.get_members()
         table = RichTable(title=title, box=getattr(RichBox, style.upper()), **kwargs)
-        table.add_column("Name")
-        table.add_column("Date modified")
-        table.add_column("Type")
-        table.add_column("Size")
-        table.add_column("Compressed Size")
+        table.add_column("Name", no_wrap=True)
+        table.add_column("Date modified", no_wrap=True)
+        table.add_column("Type", no_wrap=True)
+        table.add_column("Size", no_wrap=True)
+        table.add_column("Compressed Size", no_wrap=True)
         for member in sorted(members, key=lambda member: getattr(member, sort_by), reverse=descending):
             table.add_row(
                 member.name,
