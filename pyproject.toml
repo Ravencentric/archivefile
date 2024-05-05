@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "archivefile"
-version = "0.2.0"
+version = "0.3.0"
 description = "Unified interface for tar, zip, sevenzip, and rar files"
 authors = ["Raventric <78981416+Ravencentric@users.noreply.github.com>"]
 readme = "README.md"
