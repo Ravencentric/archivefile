@@ -40,9 +40,9 @@ class ArchiveFile:
         file : StrPath
             Path to the archive file.
         mode : OpenArchiveMode, optional
-            Specifies the mode for opening the archive file. Default is "r".
+            Specifies the mode for opening the archive file.
         password : str, optional
-            Password for encrypted archive files. Default is `None`.
+            Password for encrypted archive files.
         kwargs : Any
             Keyword arugments to pass to the underlying handler.
             Kwargs that are not relevent to the current handler will automatically
@@ -521,7 +521,7 @@ class ArchiveFile:
         Parameters
         ----------
         destination : StrPath
-            The path to the directory where the members will be extracted to.
+            The path to the directory where the members will be extracted.
             If not specified, the current working directory is used as the default destination.
         members : Iterable[StrPath | ArchiveMember], optional
             Iterable of member names or ArchiveMember objects to extract.
@@ -725,15 +725,15 @@ class ArchiveFile:
         from archivefile import ArchiveFile
 
         with ArchiveFile("example.zip", "w") as archive:
-            archive.write("foo.txt")
+            archive.write("/root/some/path/to/foo.txt")
             archive.write("bar.txt", arcname="baz.txt")
-            archive.write("recipe/spam.txt", arcname="recipe/spam.txt")
-            archive.write("recipe/eggs.txt", arcname="recipe/eggs.txt")
+            archive.write("recipe/spam.txt", arcname="ingredients/spam.txt")
+            archive.write("recipe/eggs.txt", arcname="ingredients/eggs.txt")
             archive.print_tree()
             # example.zip
             # ├── foo.txt
             # ├── baz.txt
-            # └── recipe
+            # └── ingredients
             #     ├── spam.txt
             #     └── eggs.txt
         ```
@@ -932,10 +932,10 @@ class ArchiveFile:
         Parameters
         ----------
         dir : StrPath
-            The path of the directory to be added to the archive.
+            Path of the directory.
         root : StrPath
             Directory that will be the root directory of the archive, all paths in the archive will be relative to it.
-            This MUST be a component of given directory path. Default is the parent of the given directory.
+            This must be relative to given directory path. Default is the parent of the given directory.
         glob : str, optional
             Only write files that match this glob pattern to the archive.
         recursive : bool, optional
