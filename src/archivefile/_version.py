@@ -18,7 +18,7 @@ class Version(NamedTuple):
 
 def _get_version() -> str:
     """
-    Get the version of juicenet
+    Get the version of archivefile
     """
     try:
         return metadata.version("archivefile")
