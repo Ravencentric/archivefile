@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from tarfile import TarFile
 from zipfile import ZipFile
 

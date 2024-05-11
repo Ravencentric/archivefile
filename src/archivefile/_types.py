@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from typing_extensions import Literal, TypeAlias
+from typing_extensions import Literal, TypeAlias, Union
 
-StrPath: TypeAlias = str | Path
+StrPath: TypeAlias = Union[str, Path]
 
 OpenArchiveMode: TypeAlias = Literal[
     "r",
