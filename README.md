@@ -49,13 +49,13 @@ The above libraries are excellent when you are dealing with a single archive for
 
 2. With optional dependencies:
 
-    - Required for [`ArchiveFile.print_tree()`](https://ravencentric.github.io/archivefile/api-reference/archivefile/#archivefile.ArchiveFile.print_tree)
+    - Required for [`ArchiveFile.print_tree()`](https://archivefile.ravencentric.cc/api-reference/archivefile/#archivefile.ArchiveFile.print_tree)
 
         ```sh
         pip install archivefile[bigtree]
         ```
 
-    - Required for [`ArchiveFile.print_table()`](https://ravencentric.github.io/archivefile/api-reference/archivefile/#archivefile.ArchiveFile.print_table)
+    - Required for [`ArchiveFile.print_table()`](https://archivefile.ravencentric.cc/api-reference/archivefile/#archivefile.ArchiveFile.print_table)
 
         ```sh
         pip install archivefile[rich]
@@ -92,11 +92,9 @@ with ArchiveFile("../source.zip", "w") as archive:
     archive.write_bytes(b"0101001010100101", arcname="terminator.py")  # Write bytes to the archive as terminator.py
 ```
 
-Refer to the [API reference](https://ravencentric.github.io/archivefile/api-reference/archivefile/) for more details.
-
 ## Docs
 
-Checkout the complete documentation [here](https://ravencentric.github.io/archivefile/).
+Checkout the complete documentation [here](https://archivefile.ravencentric.cc/).
 
 ## License
 

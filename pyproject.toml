@@ -1,15 +1,22 @@
 [tool.poetry]
 name = "archivefile"
-version = "0.3.1"
+version = "0.3.2"
 description = "Unified interface for tar, zip, sevenzip, and rar files"
-authors = ["Raventric <78981416+Ravencentric@users.noreply.github.com>"]
+authors = ["Raventric <me@ravencentric.cc>"]
 readme = "README.md"
 license = "Unlicense"
 packages = [{ include = "archivefile", from = "src" }]
-keywords = ["archive", "archivefile", "zipfile", "tarfile", "sevenzip", "rarfile"]
-homepage = "https://ravencentric.github.io/archivefile"
+keywords = [
+    "archive",
+    "archivefile",
+    "zipfile",
+    "tarfile",
+    "sevenzip",
+    "rarfile",
+]
+homepage = "https://archivefile.ravencentric.cc"
 repository = "https://github.com/Ravencentric/archivefile"
-documentation = "https://ravencentric.github.io/archivefile"
+documentation = "https://archivefile.ravencentric.cc"
 classifiers = [
     "License :: OSI Approved :: The Unlicense (Unlicense)",
     "Operating System :: OS Independent",
@@ -23,19 +30,19 @@ classifiers = [
 [tool.poetry.dependencies]
 python = ">=3.9"
 rarfile = ">=4.2"
-py7zr = ">=0.21.0"
-typing-extensions = ">=4.11.0"
-pydantic = ">=2.7.1"
+py7zr = ">=0.21.1"
+typing-extensions = ">=4.12.2"
+pydantic = ">=2.8.2"
 pycryptodomex = ">=3.20.0"
 pyppmd = ">=1.1.0"
-zipfile-deflate64 = "^0.2.0"
+zipfile-deflate64 = ">=0.2.0"
 pybcj = ">=1.0.2"
 multivolumefile = ">=0.2.3"
 rich = { version = ">=13.7.1", optional = true }
-bigtree = { version = ">=0.17.2", optional = true }
+bigtree = { version = ">=0.19.2", optional = true }
 brotli = { version = ">=1.1.0", markers = "platform_python_implementation == 'CPython'" }
 brotlicffi = { version = ">=1.1.0.0", markers = "platform_python_implementation == 'PyPy'" }
-importlib-metadata = { version = ">=7.1.0", python = "<3.10" }
+importlib-metadata = { version = ">=8.0.0", python = "<3.10" }
 eval-type-backport = { version = ">=0.2.0", python = "<3.10" }
 
 [tool.poetry.extras]
@@ -44,15 +51,15 @@ rich = ["rich"]
 all = ["bigtree", "rich"]
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.10.0"
-ruff = "^0.4.3"
-pytest = "^8.2.0"
-coverage = "^7.5.1"
-pre-commit = "^3.7.0"
+mypy = "^1.10.1"
+ruff = "^0.5.1"
+pytest = "^8.2.2"
+coverage = "^7.5.4"
+pre-commit = "^3.7.1"
 
 [tool.poetry.group.docs.dependencies]
-mkdocs-material = "^9.5.21"
-mkdocstrings = { extras = ["python"], version = "^0.24.0" }
+mkdocs-material = "^9.5.28"
+mkdocstrings = { extras = ["python"], version = "^0.25.1" }
 mkdocs-autorefs = "^1.0.1"
 
 [tool.ruff]
@@ -69,6 +76,11 @@ pretty = true
 [[tool.mypy.overrides]]
 module = ["rarfile"]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:tarfile"
+]
 
 [tool.coverage.run]
 omit = ["src/archivefile/_version.py", "src/archivefile/_compat.py", "tests/*"]
