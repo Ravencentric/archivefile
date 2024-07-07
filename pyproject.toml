@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "archivefile"
-version = "0.3.2"
+version = "0.3.3"
 description = "Unified interface for tar, zip, sevenzip, and rar files"
-authors = ["Raventric <me@ravencentric.cc>"]
+authors = ["Ravencentric <me@ravencentric.cc>"]
 readme = "README.md"
 license = "Unlicense"
 packages = [{ include = "archivefile", from = "src" }]
