@@ -1,3 +1,4 @@
+::: archivefile._types.UTCDateTime
 ::: archivefile._types.StrPath
 ::: archivefile._types.OpenArchiveMode
 ::: archivefile._types.TreeStyle

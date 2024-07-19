@@ -8,7 +8,7 @@ from archivefile._utils import is_archive
 from archivefile._version import Version, _get_version
 
 __version__ = _get_version()
-__version_tuple__ = Version(*map(int, __version__.split(".")))
+__version_tuple__ = Version(*[int(i) for i in __version__.split(".")])
 
 __all__ = [
     "ArchiveFile",

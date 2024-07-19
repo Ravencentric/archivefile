@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime as DateTime
-from datetime import timezone
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ByteSize, ValidationInfo, field_validator
+
+from archivefile._types import UTCDateTime
 
 
 class ArchiveMember(BaseModel):
@@ -19,7 +20,7 @@ class ArchiveMember(BaseModel):
     compressed_size: ByteSize = ByteSize(0)
     """Compressed size of the archive member."""
 
-    datetime: DateTime = DateTime.min
+    datetime: UTCDateTime = datetime.min
     """The time and date of the last modification to the archive member."""
 
     checksum: int = 0
@@ -30,11 +31,6 @@ class ArchiveMember(BaseModel):
 
     is_file: bool = False
     """True if the archive member is a file, False otherwise."""
-
-    @field_validator("datetime", mode="after")
-    @classmethod
-    def _set_timezone(cls, v: DateTime, info: ValidationInfo) -> DateTime:
-        return v.replace(tzinfo=timezone.utc)
 
     @field_validator("*", mode="before")
     @classmethod
