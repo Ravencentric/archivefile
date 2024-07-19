@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import datetime
 from pathlib import Path
 
-from archivefile import ArchiveFile, ArchiveMember
-from pydantic import ByteSize
+from archivefile import ArchiveFile
 
 files = (
     Path("tests/test_data/source_BEST.rar"),
@@ -80,465 +78,454 @@ def test_members_and_names_without_context_manager() -> None:
 
 def test_get_member_files() -> None:
     with ArchiveFile("tests/test_data/source_BEST.rar") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(1224),
-            datetime=datetime.datetime(2024, 4, 10, 14, 40, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 1224
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_BZIP2.7z") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_BZIP2.zip") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(1336),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 1336
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
+
+    with ArchiveFile("tests/test_data/source_BZIP2_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_DEFLATE.zip") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(1168),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 1168
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_DEFLATE64.zip") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(1170),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 1170
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_GNU.tar.bz2") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_GNU.tar.gz") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_GNU.tar.xz") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_LZMA.7z") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_LZMA.zip") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(1230),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 1230
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_LZMA2.7z") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
+
+    with ArchiveFile("tests/test_data/source_LZMA2_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
+
+    with ArchiveFile("tests/test_data/source_LZMA_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_POSIX.tar") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_POSIX.tar.bz2") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_POSIX.tar.gz") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_POSIX.tar.xz") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5251,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 5251
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_PPMD.7z") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_PPMD.zip") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(1103),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 1103
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
+
+    with ArchiveFile("tests/test_data/source_PPMD_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_STORE.7z") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_STORE.rar") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 14, 40, 57, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
     with ArchiveFile("tests/test_data/source_STORE.zip") as archive:
-        assert archive.get_member("pyanilist-main/README.md") == ArchiveMember(
-            name="pyanilist-main/README.md",
-            size=ByteSize(3799),
-            compressed_size=ByteSize(3799),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=398102207,
-            is_dir=False,
-            is_file=True,
-        )
+        member = archive.get_member("pyanilist-main/README.md")
+        assert  member.name == "pyanilist-main/README.md"
+        assert  member.size == 3799
+        assert  member.compressed_size == 3799
+        assert  member.checksum == 398102207
+        assert  member.is_dir is False
+        assert  member.is_file is True
 
 
 def test_get_member_dirs() -> None:
     with ArchiveFile("tests/test_data/source_BEST.rar") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 14, 40, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_BZIP2.7z") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_BZIP2.zip") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
+
+    with ArchiveFile("tests/test_data/source_BZIP2_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_DEFLATE.zip") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_DEFLATE64.zip") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_GNU.tar.bz2") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_GNU.tar.gz") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_GNU.tar.xz") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_LZMA.7z") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_LZMA.zip") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_LZMA2.7z") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
+
+    with ArchiveFile("tests/test_data/source_LZMA2_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
+
+    with ArchiveFile("tests/test_data/source_LZMA_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_POSIX.tar") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_POSIX.tar.bz2") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_POSIX.tar.gz") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_POSIX.tar.xz") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=5024,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 5024
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_PPMD.7z") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_PPMD.zip") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
+
+    with ArchiveFile("tests/test_data/source_PPMD_SOLID.7z") as archive:
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_STORE.7z") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_STORE.rar") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 14, 40, 57, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
 
     with ArchiveFile("tests/test_data/source_STORE.zip") as archive:
-        assert archive.get_member("pyanilist-main/docs/") == ArchiveMember(
-            name="pyanilist-main/docs/",
-            size=ByteSize(0),
-            compressed_size=ByteSize(0),
-            datetime=datetime.datetime(2024, 4, 10, 20, 10, 58, tzinfo=datetime.timezone.utc),
-            checksum=0,
-            is_dir=True,
-            is_file=False,
-        )
+        member = archive.get_member("pyanilist-main/docs/")
+        assert  member.name == "pyanilist-main/docs/"
+        assert  member.size == 0
+        assert  member.compressed_size == 0
+        assert  member.checksum == 0
+        assert  member.is_dir is True
+        assert  member.is_file is False
+
