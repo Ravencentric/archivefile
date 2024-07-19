@@ -358,7 +358,7 @@ class ArchiveFile:
             raise ModuleNotFoundError("The 'print_tree()' method requires the 'bigtree' dependency.")
 
         paths = [f"{self.file.name}/{member}" for member in self.get_names()]
-        tree = list_to_tree(paths)
+        tree = list_to_tree(paths) # type: ignore
         tree.show(max_depth=max_depth, style=style)
 
     @validate_call
@@ -644,16 +644,8 @@ class ArchiveFile:
             # packages = [{include = "hello_world", from = "src"}]
         ```
         """
-        # Manage the tmpdir manually to support Python <3.10
-        tmpdir = TemporaryDirectory()
-        data = self.extract(member, destination=tmpdir.name).read_text(encoding=encoding, errors=errors)
-
-        try:
-            tmpdir.cleanup()
-        except:  # noqa: E722; # pragma: no cover
-            pass
-
-        return data
+        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
+            return self.extract(member, destination=tmpdir).read_text(encoding=encoding, errors=errors)
 
     @validate_call
     def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:
@@ -681,15 +673,8 @@ class ArchiveFile:
             # b'[tool.poetry]\\r\\nname = "hello-world"\\r\\nversion = "0.1.0"\\r\\ndescription = ""\\r\\nreadme = "README.md"\\r\\npackages = [{include = "hello_world", from = "src"}]\\r\\n'
         ```
         """
-        tmpdir = TemporaryDirectory()
-        data = self.extract(member, destination=tmpdir.name).read_bytes()
-
-        try:
-            tmpdir.cleanup()
-        except:  # noqa: E722; # pragma: no cover
-            pass
-
-        return data
+        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
+            return self.extract(member, destination=tmpdir).read_bytes()
 
     @validate_call
     def write(
@@ -843,19 +828,15 @@ class ArchiveFile:
         """
 
         arcname = Path(arcname)
-        tmpdir = TemporaryDirectory()
-        tmppath = Path(tmpdir.name) / arcname.parent
-        tmppath.mkdir(parents=True, exist_ok=True)
-        tmpfile = tmppath / arcname.name
-        tmpfile.touch(exist_ok=True)
-        tmpfile.write_text(data=data, encoding=encoding, errors=errors, newline=newline)
 
-        self.write(tmpfile, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
+        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
+            tmppath = Path(tmpdir) / arcname.parent
+            tmppath.mkdir(parents=True, exist_ok=True)
+            tmpfile = tmppath / arcname.name
+            tmpfile.touch(exist_ok=True)
+            tmpfile.write_text(data=data, encoding=encoding, errors=errors, newline=newline)
 
-        try:
-            tmpdir.cleanup()
-        except:  # noqa: E722; # pragma: no cover
-            pass
+            self.write(tmpfile, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
 
     @validate_call
     def write_bytes(
@@ -908,19 +889,15 @@ class ArchiveFile:
         """
 
         arcname = Path(arcname)
-        tmpdir = TemporaryDirectory()
-        tmppath = Path(tmpdir.name) / arcname.parent
-        tmppath.mkdir(parents=True, exist_ok=True)
-        tmpfile = tmppath / arcname.name
-        tmpfile.touch(exist_ok=True)
-        tmpfile.write_bytes(data)
 
-        self.write(tmpfile, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
+        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
+            tmppath = Path(tmpdir) / arcname.parent
+            tmppath.mkdir(parents=True, exist_ok=True)
+            tmpfile = tmppath / arcname.name
+            tmpfile.touch(exist_ok=True)
+            tmpfile.write_bytes(data)
 
-        try:
-            tmpdir.cleanup()
-        except:  # noqa: E722; # pragma: no cover
-            pass
+            self.write(tmpfile, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
 
     @validate_call
     def writeall(

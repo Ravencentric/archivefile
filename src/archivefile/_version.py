@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing_extensions import NamedTuple
+from importlib import metadata
 
-from archivefile._compat import metadata
+from typing_extensions import NamedTuple
 
 
 class Version(NamedTuple):
