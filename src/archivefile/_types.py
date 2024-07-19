@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from pydantic import AfterValidator
@@ -8,7 +8,7 @@ from typing_extensions import Annotated, Literal, TypeAlias, Union
 
 
 def to_utc(dt: datetime) -> datetime:
-    return dt.astimezone(UTC)
+    return dt.astimezone(timezone.utc)
 
 
 UTCDateTime = Annotated[datetime, AfterValidator(to_utc)]
