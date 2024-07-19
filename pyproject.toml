@@ -82,7 +82,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-omit = ["src/archivefile/_version.py", "src/archivefile/_compat.py", "tests/*"]
+omit = ["src/archivefile/_version.py", "tests/*"]
 
 [build-system]
 requires = ["poetry-core"]
