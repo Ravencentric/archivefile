@@ -26,6 +26,10 @@ files = (
     Path("tests/test_data/source_PPMD.7z"),
     Path("tests/test_data/source_PPMD.zip"),
     Path("tests/test_data/source_STORE.7z"),
+    Path("tests/test_data/source_LZMA_SOLID.7z"),
+    Path("tests/test_data/source_LZMA2_SOLID.7z"),
+    Path("tests/test_data/source_PPMD_SOLID.7z"),
+    Path("tests/test_data/source_BZIP2_SOLID.7z"),
     Path("tests/test_data/source_STORE.rar"),
     Path("tests/test_data/source_STORE.zip"),
 )
