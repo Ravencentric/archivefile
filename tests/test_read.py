@@ -1,4 +1,34 @@
+from pathlib import Path
+
 from archivefile import ArchiveFile
+
+files = (
+    Path("tests/test_data/source_BEST.rar"),
+    Path("tests/test_data/source_BZIP2.7z"),
+    Path("tests/test_data/source_BZIP2.zip"),
+    Path("tests/test_data/source_DEFLATE.zip"),
+    # Path("tests/test_data/source_DEFLATE64.zip"), # Deflate64 is not supported by ZipFile
+    Path("tests/test_data/source_GNU.tar"),
+    Path("tests/test_data/source_GNU.tar.bz2"),
+    Path("tests/test_data/source_GNU.tar.gz"),
+    Path("tests/test_data/source_GNU.tar.xz"),
+    Path("tests/test_data/source_LZMA.7z"),
+    Path("tests/test_data/source_LZMA.zip"),
+    Path("tests/test_data/source_LZMA2.7z"),
+    Path("tests/test_data/source_POSIX.tar"),
+    Path("tests/test_data/source_POSIX.tar.bz2"),
+    Path("tests/test_data/source_POSIX.tar.gz"),
+    Path("tests/test_data/source_POSIX.tar.xz"),
+    Path("tests/test_data/source_PPMD.7z"),
+    # Path("tests/test_data/source_PPMD.zip"), # PPMd is not supported by ZipFile
+    Path("tests/test_data/source_STORE.7z"),
+    Path("tests/test_data/source_LZMA_SOLID.7z"),
+    Path("tests/test_data/source_LZMA2_SOLID.7z"),
+    Path("tests/test_data/source_PPMD_SOLID.7z"),
+    Path("tests/test_data/source_BZIP2_SOLID.7z"),
+    Path("tests/test_data/source_STORE.rar"),
+    Path("tests/test_data/source_STORE.zip"),
+)
 
 unlicense = """\
 This is free and unencumbered software released into the public domain.
@@ -28,188 +58,14 @@ For more information, please refer to <https://unlicense.org>
 """
 
 def test_read_text() -> None:
-    with ArchiveFile("tests/test_data/source_BEST.rar") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_BZIP2.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_BZIP2.zip") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_DEFLATE.zip") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar.bz2") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar.gz") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar.xz") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA.zip") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA2.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar.bz2") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar.gz") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar.xz") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_PPMD.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_STORE.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA_SOLID.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA2_SOLID.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_PPMD_SOLID.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_BZIP2_SOLID.7z") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_STORE.rar") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_STORE.zip") as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
+    for file in files:
+        with ArchiveFile(file) as archive:
+            member = archive.read_text("pyanilist-main/UNLICENSE")
+            assert member.strip() == unlicense.strip()
 
 
 def test_read_bytes() -> None:
-    with ArchiveFile("tests/test_data/source_BEST.rar") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_BZIP2.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_BZIP2.zip") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_DEFLATE.zip") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar.bz2") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar.gz") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_GNU.tar.xz") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA.zip") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA2.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar.bz2") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar.gz") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_POSIX.tar.xz") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_PPMD.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_STORE.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA_SOLID.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_LZMA2_SOLID.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_PPMD_SOLID.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_BZIP2_SOLID.7z") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_STORE.rar") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
-
-    with ArchiveFile("tests/test_data/source_STORE.zip") as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
+    for file in files:
+        with ArchiveFile(file) as archive:
+            member = archive.read_bytes("pyanilist-main/UNLICENSE")
+            assert member.decode().strip() == unlicense.strip()
