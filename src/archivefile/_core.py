@@ -358,7 +358,7 @@ class ArchiveFile:
             raise ModuleNotFoundError("The 'print_tree()' method requires the 'bigtree' dependency.")
 
         paths = [f"{self.file.name}/{member}" for member in self.get_names()]
-        tree = list_to_tree(paths) # type: ignore
+        tree = list_to_tree(paths)  # type: ignore
         tree.show(max_depth=max_depth, style=style)
 
     @validate_call

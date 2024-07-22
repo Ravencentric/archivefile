@@ -57,6 +57,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <https://unlicense.org>
 """
 
+
 def test_read_text() -> None:
     for file in files:
         with ArchiveFile(file) as archive:
