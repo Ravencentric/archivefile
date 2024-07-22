@@ -975,7 +975,7 @@ class ArchiveFile:
         if not dir.is_relative_to(root):
             raise ValueError(f"{dir} must be relative to {root}")
 
-        files = tuple(dir.rglob(glob)) if recursive else tuple(dir.glob(glob))
+        files = dir.rglob(glob) if recursive else dir.glob(glob)
 
         for file in files:
             arcname = file.relative_to(root)
