@@ -638,7 +638,7 @@ class ArchiveFile:
 
         if isinstance(self._handler, TarFile):
             fileobj = self._handler.extractfile(name)
-            if fileobj is None:
+            if fileobj is None: # pragma: no cover
                 return b""
             return fileobj.read()
 
@@ -647,7 +647,7 @@ class ArchiveFile:
 
         elif isinstance(self._handler, SevenZipFile):
             data = self._handler.read(targets=[name])
-            if data is None:
+            if data is None:  # pragma: no cover
                 return b""
 
             self._handler.reset()
