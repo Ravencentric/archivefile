@@ -37,7 +37,7 @@ def test_write_zip_str(tmp_path: Path) -> None:
             with ArchiveFile(archive_file) as archive:
                 assert archive.read_text(file.name).strip() == text
 
- 
+
 def test_write_zip_str_with_compression(tmp_path: Path) -> None:
     for extension in CommonExtensions.ZIP:
         for mode in modes:

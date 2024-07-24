@@ -567,7 +567,7 @@ class ArchiveFile:
         names: list[str] = []
         if members:
             for member in members:
-                    names.append(self._get_member_name(member))
+                names.append(self._get_member_name(member))
 
         if isinstance(self._handler, TarFile):
             if names:
@@ -641,10 +641,10 @@ class ArchiveFile:
             return self._handler.read(member, self._password)
 
         elif isinstance(self._handler, SevenZipFile):
-            data =  self._handler.read(targets=[member])
+            data = self._handler.read(targets=[member])
             if data is None:
                 return b""
-            
+
             self._handler.reset()
             return data[member].read()
 
