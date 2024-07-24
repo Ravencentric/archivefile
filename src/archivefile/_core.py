@@ -513,6 +513,7 @@ class ArchiveFile:
 
         elif isinstance(self._handler, SevenZipFile):
             self._handler.extract(path=destination, targets=[member])
+            self._handler.reset()
             return destination / member
 
         else:
@@ -588,9 +589,11 @@ class ArchiveFile:
         elif isinstance(self._handler, SevenZipFile):
             # SevenZipFile doesn't have a members=[...] parameter like the rest
             if names:
-                self._handler.extract(path=destination, targets=names)
+                self._handler.extract(path=destination, targets=names, recursive=True)
             else:
                 self._handler.extractall(path=destination)
+
+            self._handler.reset()
             return destination
 
         else:
@@ -601,12 +604,60 @@ class ArchiveFile:
             return destination
 
     @validate_call
+    def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:
+        """
+        Read the member in bytes mode.
+
+        Parameters
+        ----------
+        member : StrPath, ArchiveMember
+            Name of the member or an ArchiveMember object.
+
+        Returns
+        -------
+        bytes
+            The contents of the file as bytes.
+
+        Examples
+        --------
+        ```py
+        from archivefile import ArchiveFile
+
+        with ArchiveFile("source.zip") as archive:
+            data = archive.read_bytes("hello-world/pyproject.toml")
+            print(data)
+            # b'[tool.poetry]\\r\\nname = "hello-world"\\r\\nversion = "0.1.0"\\r\\ndescription = ""\\r\\nreadme = "README.md"\\r\\npackages = [{include = "hello_world", from = "src"}]\\r\\n'
+        ```
+        """
+        member = self._get_member_name(member)
+
+        if isinstance(self._handler, TarFile):
+            fileobj = self._handler.extractfile(member)
+            if fileobj is None:
+                return b""
+            return fileobj.read()
+
+        elif isinstance(self._handler, ZipFile):
+            return self._handler.read(member, self._password)
+
+        elif isinstance(self._handler, SevenZipFile):
+            data =  self._handler.read(targets=[member])
+            if data is None:
+                return b""
+            
+            self._handler.reset()
+            return data[member].read()
+
+        else:
+            return self._handler.read(member, self._password)
+
+    @validate_call
     def read_text(
         self,
         member: StrPath | ArchiveMember,
         *,
-        encoding: str | None = "utf-8",
-        errors: ErrorHandler | None = None,
+        encoding: str = "utf-8",
+        errors: ErrorHandler = "strict",
     ) -> str:
         """
         Read the member in text mode.
@@ -617,7 +668,6 @@ class ArchiveFile:
             Name of the member or an ArchiveMember object.
         encoding : str, optional
             Encoding used to read the file. Default is `utf-8`.
-            Setting it to `None` will use platform-dependent encoding.
         errors : ErrorHandler, optional
             String that specifies how encoding and decoding errors are to be handled.
 
@@ -647,37 +697,7 @@ class ArchiveFile:
             # packages = [{include = "hello_world", from = "src"}]
         ```
         """
-        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
-            return self.extract(member, destination=tmpdir).read_text(encoding=encoding, errors=errors)
-
-    @validate_call
-    def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:
-        """
-        Read the member in bytes mode.
-
-        Parameters
-        ----------
-        member : StrPath, ArchiveMember
-            Name of the member or an ArchiveMember object.
-
-        Returns
-        -------
-        bytes
-            The contents of the file as bytes.
-
-        Examples
-        --------
-        ```py
-        from archivefile import ArchiveFile
-
-        with ArchiveFile("source.zip") as archive:
-            data = archive.read_bytes("hello-world/pyproject.toml")
-            print(data)
-            # b'[tool.poetry]\\r\\nname = "hello-world"\\r\\nversion = "0.1.0"\\r\\ndescription = ""\\r\\nreadme = "README.md"\\r\\npackages = [{include = "hello_world", from = "src"}]\\r\\n'
-        ```
-        """
-        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
-            return self.extract(member, destination=tmpdir).read_bytes()
+        return self.read_bytes(member).decode(encoding, errors)
 
     @validate_call
     def write(
