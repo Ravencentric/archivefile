@@ -629,27 +629,32 @@ class ArchiveFile:
             # b'[tool.poetry]\\r\\nname = "hello-world"\\r\\nversion = "0.1.0"\\r\\ndescription = ""\\r\\nreadme = "README.md"\\r\\npackages = [{include = "hello_world", from = "src"}]\\r\\n'
         ```
         """
-        member = self._get_member_name(member)
+        member = self.get_member(self._get_member_name(member)) if not isinstance(member, ArchiveMember) else member
+
+        if member.is_dir:
+            return b""
+        
+        name = member.name
 
         if isinstance(self._handler, TarFile):
-            fileobj = self._handler.extractfile(member)
+            fileobj = self._handler.extractfile(name)
             if fileobj is None:
                 return b""
             return fileobj.read()
 
         elif isinstance(self._handler, ZipFile):
-            return self._handler.read(member, self._password)
+            return self._handler.read(name, self._password)
 
         elif isinstance(self._handler, SevenZipFile):
-            data = self._handler.read(targets=[member])
+            data = self._handler.read(targets=[name])
             if data is None:
                 return b""
 
             self._handler.reset()
-            return data[member].read()
+            return data[name].read()
 
         else:
-            return self._handler.read(member, self._password)
+            return self._handler.read(name, self._password)
 
     @validate_call
     def read_text(
