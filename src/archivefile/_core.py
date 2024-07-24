@@ -122,6 +122,20 @@ class ArchiveFile:
         else:
             raise UnsupportedArchiveOperation(f"Unsupported archive format: {archive.suffix}")
 
+    @staticmethod
+    def _get_member_name(member: StrPath | ArchiveMember) -> str:
+        """Get the member name from a string, path, or ArchiveMember"""
+
+        if isinstance(member, ArchiveMember):
+            return member.name
+
+        if isinstance(member, Path):
+            # Do not expand/resolve member if the input is a path
+            # since that can change the meaning of the name
+            return member.relative_to(member.anchor).as_posix()
+
+        return member
+
     def __enter__(self) -> Self:
         return self
 
@@ -176,7 +190,7 @@ class ArchiveFile:
         ```
         """
 
-        member = member.as_posix() if isinstance(member, Path) else member
+        member = self._get_member_name(member)
 
         if isinstance(self._handler, TarFile):
             tarinfo = self._handler.getmember(member)
@@ -485,13 +499,7 @@ class ArchiveFile:
         destination = realpath(destination)
         destination.mkdir(parents=True, exist_ok=True)
 
-        if isinstance(member, ArchiveMember):
-            member = member.name
-
-        if isinstance(member, Path):
-            # Do not expand/resolve member if the input is a path
-            # since that can change the meaning of the name
-            member = member.relative_to(member.anchor).as_posix()
+        member = self._get_member_name(member)
 
         if isinstance(self._handler, TarFile):
             self._handler.extract(member=member, path=destination)
@@ -558,12 +566,7 @@ class ArchiveFile:
         names: list[str] = []
         if members:
             for member in members:
-                if isinstance(member, ArchiveMember):
-                    names.append(member.name)
-                elif isinstance(member, Path):
-                    names.append(member.relative_to(member.anchor).as_posix())
-                else:
-                    names.append(member)
+                    names.append(self._get_member_name(member))
 
         if isinstance(self._handler, TarFile):
             if names:
