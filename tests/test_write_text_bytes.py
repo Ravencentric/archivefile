@@ -27,7 +27,7 @@ def test_write_text(tmp_path: Path) -> None:
     for extension in extensions:
         for mode in modes:
             dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            data = "\nHello World\n"
+            data = "Hello World"
             with ArchiveFile(dir, mode) as archive:  # type: ignore
                 archive.write_text(data, arcname="test.txt")
 
@@ -39,7 +39,7 @@ def test_write_bytes(tmp_path: Path) -> None:
     for extension in extensions:
         for mode in modes:
             dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            data = b"\nHello World\n"
+            data = b"Hello World"
             with ArchiveFile(dir, mode) as archive:  # type: ignore
                 archive.write_bytes(data, arcname="test.dat")
 

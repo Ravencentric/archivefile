@@ -58,15 +58,29 @@ For more information, please refer to <https://unlicense.org>
 """
 
 
-def test_read_text() -> None:
+def test_read_text_file() -> None:
     for file in files:
         with ArchiveFile(file) as archive:
             member = archive.read_text("pyanilist-main/UNLICENSE")
             assert member.strip() == unlicense.strip()
 
 
-def test_read_bytes() -> None:
+def test_read_bytes_file() -> None:
     for file in files:
         with ArchiveFile(file) as archive:
             member = archive.read_bytes("pyanilist-main/UNLICENSE")
             assert member.decode().strip() == unlicense.strip()
+
+
+def test_read_text_folder() -> None:
+    for file in files:
+        with ArchiveFile(file) as archive:
+            member = archive.read_text("pyanilist-main/src/")
+            assert member == ""
+
+
+def test_read_bytes_folder() -> None:
+    for file in files:
+        with ArchiveFile(file) as archive:
+            member = archive.read_bytes("pyanilist-main/src/")
+            assert member == b""
