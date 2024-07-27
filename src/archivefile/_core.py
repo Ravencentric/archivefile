@@ -153,6 +153,11 @@ class ArchiveFile(BaseArchiveAdapter):
         ArchiveMember
             Represents a member of the archive.
 
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
+
         Examples
         --------
         ```py
@@ -744,4 +749,5 @@ class ArchiveFile(BaseArchiveAdapter):
         self._adapter.close()
 
     def __repr__(self) -> str:
-        return f'{self._adapter.__class__.__name__}("{self._file}", "{self._mode}", password="{self._password}")'
+        password = '"********"' if self.password else None
+        return f'{self.__class__.__name__}("{self.file}", "{self.mode}", password={password})'

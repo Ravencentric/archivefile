@@ -262,3 +262,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
 
     def close(self) -> None:
         self._zipfile.close()
+
+    def __repr__(self) -> str:
+        password = '"********"' if self.password else None
+        return f'{self.__class__.__name__}("{self.file}", "{self.mode}", password={password})'
