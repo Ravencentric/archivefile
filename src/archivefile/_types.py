@@ -13,6 +13,7 @@ StrPath: TypeAlias = Union[str, Path]
 
 T = TypeVar("T")
 CollectionOf: TypeAlias = Union[list[T], tuple[T, ...], set[T]]
+"""Type alias representing a union of list, tuple, and set."""
 
 OpenArchiveMode: TypeAlias = Literal[
     "r",
