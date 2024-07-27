@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from archivefile import ArchiveFile
-from archivefile._enums import CommonExtensions
 
 modes = (
     "w",
@@ -20,28 +20,30 @@ modes = (
     "a",
     "a:",
 )
-extensions = CommonExtensions.ZIP + CommonExtensions.TAR + CommonExtensions.SEVENZIP
+
+extensions = ("tar", "tar.bz2", "tar.gz", "tar.xz", "cbt") + ("7z", "cb7") + ("zip", "cbz")
 
 
-def test_write_text(tmp_path: Path) -> None:
-    for extension in extensions:
-        for mode in modes:
-            dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            data = "Hello World"
-            with ArchiveFile(dir, mode) as archive:  # type: ignore
-                archive.write_text(data, arcname="test.txt")
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_text(tmp_path: Path, mode: str, extension: str) -> None:
+    dir = tmp_path / f"{uuid4()}.{extension}"
+    data = "Hello World"
+    with ArchiveFile(dir, mode) as archive:
+        print(archive)
+        archive.write_text(data, arcname="test.txt")
 
-            with ArchiveFile(dir, "r") as archive:
-                assert archive.read_text("test.txt") == data
+    with ArchiveFile(dir, "r") as archive:
+        assert archive.read_text("test.txt") == data
 
 
-def test_write_bytes(tmp_path: Path) -> None:
-    for extension in extensions:
-        for mode in modes:
-            dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            data = b"Hello World"
-            with ArchiveFile(dir, mode) as archive:  # type: ignore
-                archive.write_bytes(data, arcname="test.dat")
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_bytes(tmp_path: Path, mode: str, extension: str) -> None:
+    dir = tmp_path / f"{uuid4()}.{extension}"
+    data = b"Hello World"
+    with ArchiveFile(dir, mode) as archive:
+        archive.write_bytes(data, arcname=Path("test.dat"))
 
-            with ArchiveFile(dir, "r") as archive:
-                assert archive.read_bytes("test.dat") == data
+    with ArchiveFile(dir, "r") as archive:
+        assert archive.read_bytes("test.dat") == data

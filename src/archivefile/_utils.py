@@ -1,16 +1,13 @@
 from __future__ import annotations
 
-import inspect
-from collections.abc import Iterable
 from pathlib import Path
 from tarfile import is_tarfile
-from typing import Any, Callable
 from zipfile import is_zipfile
 
 from py7zr import is_7zfile
 from rarfile import is_rarfile, is_rarfile_sfx
 
-from archivefile._enums import CommonExtensions
+from archivefile._models import ArchiveMember
 from archivefile._types import StrPath
 
 
@@ -29,32 +26,6 @@ def realpath(path: StrPath) -> Path:
         The path after expanding the user's home directory and resolving any symbolic links.
     """
     return path.expanduser().resolve() if isinstance(path, Path) else Path(path).expanduser().resolve()
-
-
-def filter_kwargs(callabe: Callable[..., Any], kwargs: dict[str, Any]) -> dict[str, Any]:
-    """
-    Filters out keyword arguments that are not accepted by the class constructor.
-
-    Parameters
-    ---------
-    callabe : Callable[..., Any]
-        The callable to check against.
-    kwargs : dict[str, Any]
-        A dictionary of keyword arguments to filter.
-
-    Returns
-    -------
-    dict[str, Any]
-        A dictionary of keyword arguments that are accepted by the callable.
-    """
-    parameters = inspect.signature(callabe).parameters.keys()
-    return {
-        parameter: value
-        for parameter, value in kwargs.items()
-        if parameter in parameters  # We only want to keep parameters accepted by the callable
-        and parameter
-        not in ("file", "mode", "name")  # We remove these because they are already handled by ArchiveFile constructor
-    }
 
 
 def is_archive(file: StrPath) -> bool:
@@ -79,25 +50,15 @@ def is_archive(file: StrPath) -> bool:
         return False
 
 
-def check_extension(extensions: Iterable[str], whitelist: CommonExtensions) -> bool:
-    """
-    Check given extensions against a whitelist of extensions.
+def get_member_name(member: StrPath | ArchiveMember) -> str:
+    """Get the member name from a string, path, or ArchiveMember"""
 
-    Parameters
-    ---------
-    extensions : Iterable[str]
-        Extensions to check.
-    whitelist : CommonExtensions
-        Whitelist of extensions to check against the given extensions.
+    match member:
+        case ArchiveMember():
+            return member.name
 
-    Returns
-    -------
-    bool
-        True if the extension is whitelisted, False otherwise.
-    """
+        case Path():
+            return member.relative_to(member.anchor).as_posix()
 
-    for extension in extensions:
-        if extension in whitelist.value:
-            return True
-
-    return False
+        case _:
+            return member

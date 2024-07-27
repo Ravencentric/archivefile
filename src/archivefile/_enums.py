@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 
 class CompressionType(IntEnum):
@@ -23,10 +23,3 @@ class CompressionType(IntEnum):
     The numeric constant for the LZMA compression method. 
     This requires the [lzma](https://docs.python.org/3/library/lzma.html#module-lzma) module.
     """
-
-
-class CommonExtensions(tuple[str, ...], Enum):
-    ZIP = (".zip", ".cbz")
-    TAR = (".tar", ".tar.bz2", ".tar.gz", ".tar.xz", ".cbt")
-    SEVENZIP = (".7z", ".cb7")
-    RAR = (".rar", ".cbr")

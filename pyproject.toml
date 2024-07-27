@@ -23,6 +23,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Archiving",
+    "Topic :: System :: Archiving :: Compression",
     "Typing :: Typed",
 ]
 
@@ -41,8 +43,6 @@ rich = { version = ">=13.7.1", optional = true }
 bigtree = { version = ">=0.19.3", optional = true }
 brotli = { version = ">=1.1.0", markers = "platform_python_implementation == 'CPython'" }
 brotlicffi = { version = ">=1.1.0.0", markers = "platform_python_implementation == 'PyPy'" }
-importlib-metadata = { version = ">=8.1.0", python = "<3.10" }
-eval-type-backport = { version = ">=0.2.0", python = "<3.10" }
 
 [tool.poetry.extras]
 bigtree = ["bigtree"]
@@ -63,6 +63,7 @@ mkdocs-autorefs = "^1.0.1"
 
 [tool.ruff]
 line-length = 120
+target-version = "py310"
 
 [tool.ruff.lint]
 extend-select = ["I"]
@@ -77,12 +78,21 @@ module = ["rarfile"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-filterwarnings = [
-    "ignore::DeprecationWarning:tarfile"
-]
+filterwarnings = ["ignore::DeprecationWarning:tarfile"]
 
 [tool.coverage.run]
-omit = ["src/archivefile/_version.py", "tests/*"]
+omit = [
+    "src/archivefile/_version.py",
+    "tests/*",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",         # Only used for type-hints
+    "raise NotImplementedError", # Can't test what's not implemented
+    "def print_table",           # Function pretty much calls another third party function
+    "def print_tree",            # Function pretty much calls another third party function
+]
 
 [build-system]
 requires = ["poetry-core"]

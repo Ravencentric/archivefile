@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from archivefile import ArchiveFile
-from archivefile._enums import CommonExtensions
 
 modes = (
     "w",
@@ -20,35 +20,38 @@ modes = (
     "a",
     "a:",
 )
-extensions = CommonExtensions.ZIP + CommonExtensions.TAR + CommonExtensions.SEVENZIP
-archive_dir = Path("src/archivefile").resolve()
+
+extensions = ("zip", "cbz") + ("tar", "tar.bz2", "tar.gz", "tar.xz", "cbt") + ("7z", "cb7")
 
 
-def test_writeall(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            with ArchiveFile(dir, mode) as archive:  # type: ignore
-                archive.writeall(archive_dir, glob="*.py")
-
-            with ArchiveFile(dir, "r") as archive:
-                dest = tmp_path / uuid4().hex[:10]
-                dest.mkdir(parents=True, exist_ok=True)
-                archive.extractall(destination=dest)
-
-            assert len(tuple(archive_dir.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
+ARCHIVE_DIR = Path("src/archivefile").resolve()
 
 
-def test_writeall_with_root(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            dir = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            with ArchiveFile(dir, mode) as archive:  # type: ignore
-                archive.writeall(archive_dir, glob="*.py", root=archive_dir.parent.parent)
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_writeall(tmp_path: Path, mode: str, extension: str) -> None:
+    dir = tmp_path / f"{uuid4()}.{extension}"
+    with ArchiveFile(dir, mode) as archive:  # type: ignore
+        archive.writeall(ARCHIVE_DIR, glob="*.py")
 
-            with ArchiveFile(dir, "r") as archive:
-                dest = tmp_path / uuid4().hex[:10]
-                dest.mkdir(parents=True, exist_ok=True)
-                archive.extractall(destination=dest)
+    with ArchiveFile(dir, "r") as archive:
+        dest = tmp_path / str(uuid4())
+        dest.mkdir(parents=True, exist_ok=True)
+        archive.extractall(destination=dest)
 
-            assert len(tuple(archive_dir.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
+    assert len(tuple(ARCHIVE_DIR.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
+
+
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_writeall_with_root(tmp_path: Path, mode: str, extension: str) -> None:
+    dir = tmp_path / f"{uuid4()}.{extension}"
+    with ArchiveFile(dir, mode) as archive:  # type: ignore
+        archive.writeall(ARCHIVE_DIR, glob="*.py", root=ARCHIVE_DIR.parent.parent)
+
+    with ArchiveFile(dir, "r") as archive:
+        dest = tmp_path / str(uuid4())
+        dest.mkdir(parents=True, exist_ok=True)
+        archive.extractall(destination=dest)
+
+    assert len(tuple(ARCHIVE_DIR.rglob("*.py"))) == len(tuple(dest.rglob("*.*")))
