@@ -92,6 +92,7 @@ exclude_also = [
     "raise NotImplementedError", # Can't test what's not implemented
     "def print_table",           # Function pretty much calls another third party function
     "def print_tree",            # Function pretty much calls another third party function
+    "def __repr__",              # For debugging
 ]
 
 [build-system]
