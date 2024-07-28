@@ -32,17 +32,10 @@ classifiers = [
 python = ">=3.10"
 rarfile = ">=4.2"
 py7zr = ">=0.21.1"
-typing-extensions = ">=4.12.2"
 pydantic = ">=2.8.2"
-pycryptodomex = ">=3.20.0"
-pyppmd = ">=1.1.0"
-zipfile-deflate64 = ">=0.2.0"
-pybcj = ">=1.0.2"
-multivolumefile = ">=0.2.3"
+typing-extensions = ">=4.12.2"
 rich = { version = ">=13.7.1", optional = true }
 bigtree = { version = ">=0.19.3", optional = true }
-brotli = { version = ">=1.1.0", markers = "platform_python_implementation == 'CPython'" }
-brotlicffi = { version = ">=1.1.0.0", markers = "platform_python_implementation == 'PyPy'" }
 
 [tool.poetry.extras]
 bigtree = ["bigtree"]
@@ -52,7 +45,7 @@ all = ["bigtree", "rich"]
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.0"
 ruff = "^0.5.4"
-pytest = "^8.3.1"
+pytest = "^8.3.2"
 coverage = "^7.6.0"
 pre-commit = "^3.7.1"
 
