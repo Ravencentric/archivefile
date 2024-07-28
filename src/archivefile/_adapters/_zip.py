@@ -57,7 +57,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
         self._pwd = password.encode() if password else None
 
         compression = CompressionType.get(compression_type)
-        compresslevel = clamp_compression_level(compression_level)
+        compresslevel = clamp_compression_level(compression_level) if compression_level else None
 
         if compression == CompressionType.BZIP2:
             # BZIP2 only supports 1-9
