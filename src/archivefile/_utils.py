@@ -62,3 +62,10 @@ def get_member_name(member: StrPath | ArchiveMember) -> str:
 
         case _:
             return member
+
+
+def clamp_compression_level(level: int) -> int:
+    """
+    Pretty simple method to clamp compression level to a valid range
+    """
+    return max(0, min(level, 9))

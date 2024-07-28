@@ -97,6 +97,7 @@ def test_missing_member(file: Path) -> None:
         with ArchiveFile(file) as archive:
             archive.get_member("non-existent.member")
 
+
 @pytest.mark.parametrize("file", files)
 def test_missing_member_in_read_bytes(file: Path) -> None:
     with pytest.raises(KeyError):

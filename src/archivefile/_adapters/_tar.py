@@ -27,29 +27,19 @@ if TYPE_CHECKING:
 
 
 class TarFileAdapter(BaseArchiveAdapter):
+    # fmt: off
     @overload
-    def __init__(
-        self,
-        file: StrPath,
-        mode: OpenArchiveMode = "r",
-        *,
-        password: str | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
-        **kwargs: Any,
-    ) -> None: ...
+    def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...
 
     @overload
-    def __init__(
-        self,
-        file: StrPath,
-        mode: str = "r",
-        *,
-        password: str | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
-        **kwargs: Any,
-    ) -> None: ...
+    def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
+    # fmt: on
 
     def __init__(
         self,
@@ -58,7 +48,7 @@ class TarFileAdapter(BaseArchiveAdapter):
         *,
         password: str | None = None,
         compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
+        compression_level: CompressionLevel | int | None = None,
         **kwargs: Any,
     ) -> None:
         self._file = realpath(file)

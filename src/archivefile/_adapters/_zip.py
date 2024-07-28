@@ -8,7 +8,7 @@ from zipfile import ZipFile
 from archivefile._adapters._base import BaseArchiveAdapter
 from archivefile._enums import CompressionType
 from archivefile._models import ArchiveMember
-from archivefile._utils import get_member_name, realpath
+from archivefile._utils import clamp_compression_level, get_member_name, realpath
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -27,29 +27,19 @@ if TYPE_CHECKING:
 
 
 class ZipFileAdapter(BaseArchiveAdapter):
+    # fmt: off
     @overload
-    def __init__(
-        self,
-        file: StrPath,
-        mode: OpenArchiveMode = "r",
-        *,
-        password: str | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
-        **kwargs: Any,
-    ) -> None: ...
+    def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...
 
     @overload
-    def __init__(
-        self,
-        file: StrPath,
-        mode: str = "r",
-        *,
-        password: str | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
-        **kwargs: Any,
-    ) -> None: ...
+    def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
+    # fmt: on
 
     def __init__(
         self,
@@ -58,7 +48,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
         *,
         password: str | None = None,
         compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
+        compression_level: CompressionLevel | int | None = None,
         **kwargs: Any,
     ) -> None:
         self._file = realpath(file)
@@ -66,14 +56,16 @@ class ZipFileAdapter(BaseArchiveAdapter):
         self._password = password
         self._pwd = password.encode() if password else None
 
-        compression = CompressionType.STORED if compression_type is None else compression_type
+        compression = CompressionType.get(compression_type)
+        compresslevel = clamp_compression_level(compression_level)
 
         if compression == CompressionType.BZIP2:
-            if compression_level == 0:
-                compression_level = 1
+            # BZIP2 only supports 1-9
+            if compresslevel == 0:
+                compresslevel = 1
 
         self._zipfile = ZipFile(
-            self._file, mode=self._mode, compression=compression, compresslevel=compression_level, **kwargs
+            self._file, mode=self._mode, compression=compression, compresslevel=compresslevel, **kwargs
         )  # type: ignore
 
     def __enter__(self) -> Self:
