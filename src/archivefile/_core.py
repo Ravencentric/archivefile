@@ -57,9 +57,7 @@ class ArchiveFile(BaseArchiveAdapter):
         password : str, optional
             Password for encrypted archive files.
         kwargs : Any
-            Keyword arugments to pass to the underlying handler.
-            Kwargs that are not relevent to the current handler will automatically
-            be removed so you don't have to worry about accidentally passing ZipFile's kwargs to TarFile.
+            Keyword arugments to pass to the underlying library.
 
         Returns
         -------
@@ -379,7 +377,7 @@ class ArchiveFile(BaseArchiveAdapter):
             The path to the directory where the members will be extracted.
             If not specified, the current working directory is used as the default destination.
         members : CollectionOf[StrPath | ArchiveMember], optional
-            CollectionOf of member names or ArchiveMember objects to extract.
+            Collection of member names or ArchiveMember objects to extract.
             Default is `None` which will extract all members.
 
         Returns
@@ -424,6 +422,11 @@ class ArchiveFile(BaseArchiveAdapter):
         bytes
             The contents of the file as bytes.
 
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
+
         Examples
         --------
         ```py
@@ -462,6 +465,11 @@ class ArchiveFile(BaseArchiveAdapter):
         -------
         str
             The contents of the file as a string.
+
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
 
         References
         ----------

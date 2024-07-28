@@ -212,16 +212,22 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         return destination
 
     def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:
-        name = get_member_name(member)
-        data = self._sevenzipfile.read(targets=[name])
-        if data is None:  # pragma: no cover
-            return b""
+        # Unlike the rest, SevenZip member directories do not end with `/`, so we need to strip it out
+        # i.e, `spam/eggs/` in a ZipFile is equivalent to `spam/eggs` in SevenZipFile
+        name = get_member_name(member).removesuffix("/")
 
-        if fileobj := data.get(name):
-            self._sevenzipfile.reset()
-            return fileobj.read()  # type: ignore
+        if name not in self._sevenzipfile.getnames():
+            raise KeyError(f"{name} not found in {self._file}")
+
+        datadict = self._sevenzipfile.read(targets=[name])
+
+        if fileobj := datadict.get(name):
+            data = fileobj.read()
         else:
-            return b""
+            data = b""
+
+        self._sevenzipfile.reset()
+        return data
 
     def read_text(
         self,

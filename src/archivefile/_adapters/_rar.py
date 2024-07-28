@@ -189,7 +189,12 @@ class RarFileAdapter(BaseArchiveAdapter):
         if name.endswith("/"):
             return b""
 
-        return self._rarfile.read(name, pwd=self._password)  # type: ignore
+        try:
+            # ZipFile and TarFile raise KeyError but RarFile raises it's own NoRarEntry
+            # So for consistency's sake, we'll also raise KeyError here
+            return self._rarfile.read(name, pwd=self._password)
+        except NoRarEntry:
+            raise KeyError(f"{name} not found in {self._file}")
 
     def read_text(
         self,
