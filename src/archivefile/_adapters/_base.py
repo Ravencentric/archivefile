@@ -24,14 +24,37 @@ if TYPE_CHECKING:
 class BaseArchiveAdapter(Protocol):
     @overload
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     @overload
-    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, **kwargs: Any) -> None: ...
+    def __init__(
+        self,
+        file: StrPath,
+        mode: str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
+    ) -> None: ...
 
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode | str = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode | str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     def __enter__(self) -> Self: ...
@@ -93,8 +116,6 @@ class BaseArchiveAdapter(Protocol):
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None: ...
 
     def write_text(
@@ -102,8 +123,6 @@ class BaseArchiveAdapter(Protocol):
         data: str,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None: ...
 
     def write_bytes(
@@ -111,8 +130,6 @@ class BaseArchiveAdapter(Protocol):
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None: ...
 
     def writeall(
@@ -122,8 +139,6 @@ class BaseArchiveAdapter(Protocol):
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None: ...
 
     def close(self) -> None: ...
