@@ -35,15 +35,37 @@ from archivefile._utils import realpath
 class ArchiveFile(BaseArchiveAdapter):
     @overload
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     @overload
-    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, **kwargs: Any) -> None: ...
-
-    @validate_call
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode | str = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode | str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Open an archive file.
@@ -56,8 +78,19 @@ class ArchiveFile(BaseArchiveAdapter):
             Specifies the mode for opening the archive file.
         password : str, optional
             Password for encrypted archive files.
+        compression_type : CompressionType, optional
+            The compression method to be used. If `None`, the default compression
+            method of the archive will be used.
+        compression_level : CompressionLevel, optional
+            The compression level to be used. If `None`, the default compression
+            level of the archive will be used.
         kwargs : Any
             Keyword arugments to pass to the underlying library.
+
+        Notes
+        -----
+        Both the `compression_type` and `compression_level` parameters
+        only apply to zip files and have no effect on other archive formats.
 
         Returns
         -------
@@ -76,6 +109,8 @@ class ArchiveFile(BaseArchiveAdapter):
         self._mode = mode
         self._password = password
         self._kwargs = kwargs
+        self._compression_type = compression_type
+        self._compression_level = compression_level
         self._initialize_adapter()
 
     def _initialize_adapter(self) -> None:
@@ -111,7 +146,14 @@ class ArchiveFile(BaseArchiveAdapter):
         else:
             raise NotImplementedError(f"Unsupported archive format: {self._file}")
 
-        self._adapter = adapter(self._file, self._mode, password=self._password, **self._kwargs)
+        self._adapter = adapter(
+            self._file,
+            self._mode,
+            password=self._password,
+            compression_type=self._compression_type,
+            compression_level=self._compression_level,
+            **self._kwargs,
+        )
 
     def __enter__(self) -> Self:
         return self
@@ -500,8 +542,6 @@ class ArchiveFile(BaseArchiveAdapter):
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write a single file to the archive.
@@ -513,21 +553,10 @@ class ArchiveFile(BaseArchiveAdapter):
         arcname : StrPath, optional
             Name which the file will have in the archive.
             Default is the basename of the file.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Examples
         --------
@@ -548,9 +577,7 @@ class ArchiveFile(BaseArchiveAdapter):
             #     └── eggs.txt
         ```
         """
-        self._adapter.write(
-            file, arcname=arcname, compression_type=compression_type, compression_level=compression_level
-        )
+        self._adapter.write(file, arcname=arcname)
 
     @validate_call
     def write_text(
@@ -558,8 +585,6 @@ class ArchiveFile(BaseArchiveAdapter):
         data: str,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write the string `data` to a file within the archive named `arcname`.
@@ -570,27 +595,10 @@ class ArchiveFile(BaseArchiveAdapter):
             The text data to write to the archive.
         arcname : StrPath, optional
             The name which the file will have in the archive.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
-
-        References
-        ----------
-        - [Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings)
-        - [Error Handlers](https://docs.python.org/3/library/codecs.html#error-handlers)
-        - [Newline](https://docs.python.org/3/library/functions.html#open)
 
         Examples
         --------
@@ -608,9 +616,7 @@ class ArchiveFile(BaseArchiveAdapter):
         ```
         """
 
-        self._adapter.write_text(
-            data, arcname=arcname, compression_type=compression_type, compression_level=compression_level
-        )
+        self._adapter.write_text(data, arcname=arcname)
 
     @validate_call
     def write_bytes(
@@ -618,8 +624,6 @@ class ArchiveFile(BaseArchiveAdapter):
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write the bytes `data` to a file within the archive named `arcname`.
@@ -630,21 +634,10 @@ class ArchiveFile(BaseArchiveAdapter):
             The bytes data to write to the archive.
         arcname : StrPath, optional
             The name which the file will have in the archive.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Examples
         --------
@@ -662,9 +655,7 @@ class ArchiveFile(BaseArchiveAdapter):
         ```
         """
 
-        self._adapter.write_bytes(
-            data, arcname=arcname, compression_type=compression_type, compression_level=compression_level
-        )
+        self._adapter.write_bytes(data, arcname=arcname)
 
     @validate_call
     def writeall(
@@ -674,8 +665,6 @@ class ArchiveFile(BaseArchiveAdapter):
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write a directory to the archive.
@@ -691,21 +680,10 @@ class ArchiveFile(BaseArchiveAdapter):
             Only write files that match this glob pattern to the archive.
         recursive : bool, optional
             Recursively write all the files in the given directory. Default is True.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Examples
         --------
@@ -732,8 +710,6 @@ class ArchiveFile(BaseArchiveAdapter):
             root=root,
             glob=glob,
             recursive=recursive,
-            compression_type=compression_type,
-            compression_level=compression_level,
         )
 
     def close(self) -> None:

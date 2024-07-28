@@ -49,8 +49,8 @@ def test_write_str_with_compression(tmp_path: Path, mode: str, extension: str) -
     text = "Hello World"
     file.write_text(text)
 
-    with ArchiveFile(archive_file, mode=mode) as archive:
-        archive.write(file, compression_level=0, compression_type=CompressionType.BZIP2)
+    with ArchiveFile(archive_file, mode=mode, compression_level=0, compression_type=CompressionType.BZIP2) as archive:
+        archive.write(file)
 
     with ArchiveFile(archive_file) as archive:
         assert archive.read_text(file.name).strip() == text
@@ -81,8 +81,10 @@ def test_write_bytes_with_compression(tmp_path: Path, mode: str, extension: str)
     text = b"Hello World"
     file.write_bytes(text)
 
-    with ArchiveFile(archive_file, mode=mode) as archive:
-        archive.write(file, compression_level=1, compression_type=CompressionType.DEFLATED)
+    with ArchiveFile(
+        archive_file, mode=mode, compression_level=1, compression_type=CompressionType.DEFLATED
+    ) as archive:
+        archive.write(file)
 
     with ArchiveFile(archive_file) as archive:
         assert archive.read_bytes(file.name) == text

@@ -29,19 +29,41 @@ if TYPE_CHECKING:
 class TarFileAdapter(BaseArchiveAdapter):
     @overload
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     @overload
-    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, **kwargs: Any) -> None: ...
+    def __init__(
+        self,
+        file: StrPath,
+        mode: str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
+    ) -> None: ...
 
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode | str = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode | str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None:
         self._file = realpath(file)
         self._mode = mode
         self._password = password
-        self._kwargs = kwargs
         self._tarfile = tarfile.open(self._file, mode=self._mode, **kwargs)
         # https://docs.python.org/3/library/tarfile.html#supporting-older-python-versions
         self._tarfile.extraction_filter = getattr(tarfile, "data_filter", (lambda member, path: member))
@@ -196,8 +218,6 @@ class TarFileAdapter(BaseArchiveAdapter):
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         file = realpath(file)
 
@@ -214,20 +234,14 @@ class TarFileAdapter(BaseArchiveAdapter):
         data: str,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
-        self.write_bytes(
-            data=data.encode(), arcname=arcname, compression_type=compression_type, compression_level=compression_level
-        )
+        self.write_bytes(data=data.encode(), arcname=arcname)
 
     def write_bytes(
         self,
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         tarinfo = tarfile.TarInfo(get_member_name(arcname))
         tarinfo.size = len(data)
@@ -240,8 +254,6 @@ class TarFileAdapter(BaseArchiveAdapter):
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         dir = realpath(dir)
 

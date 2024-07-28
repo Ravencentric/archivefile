@@ -30,19 +30,41 @@ if TYPE_CHECKING:
 class RarFileAdapter(BaseArchiveAdapter):
     @overload
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     @overload
-    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, **kwargs: Any) -> None: ...
+    def __init__(
+        self,
+        file: StrPath,
+        mode: str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
+    ) -> None: ...
 
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode | str = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode | str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None:
         self._file = realpath(file)
         self._mode = mode[0]
         self._password = password
-        self._kwargs = kwargs
 
         if self._mode == "r":
             self._rarfile = RarFile(self._file, mode=self._mode, **kwargs)
@@ -210,8 +232,6 @@ class RarFileAdapter(BaseArchiveAdapter):
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         raise NotImplementedError('Cannot write to a rar file. Rar files only support mode="r"!')
 
@@ -220,8 +240,6 @@ class RarFileAdapter(BaseArchiveAdapter):
         data: str,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         raise NotImplementedError('Cannot write to a rar file. Rar files only support mode="r"!')
 
@@ -230,8 +248,6 @@ class RarFileAdapter(BaseArchiveAdapter):
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         raise NotImplementedError('Cannot write to a rar file. Rar files only support mode="r"!')
 
@@ -242,8 +258,6 @@ class RarFileAdapter(BaseArchiveAdapter):
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         raise NotImplementedError('Cannot write to a rar file. Rar files only support mode="r"!')
 

@@ -29,20 +29,52 @@ if TYPE_CHECKING:
 class ZipFileAdapter(BaseArchiveAdapter):
     @overload
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     @overload
-    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, **kwargs: Any) -> None: ...
+    def __init__(
+        self,
+        file: StrPath,
+        mode: str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
+    ) -> None: ...
 
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode | str = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode | str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None:
         self._file = realpath(file)
         self._mode = mode[0]
         self._password = password
         self._pwd = password.encode() if password else None
-        self._zipfile = ZipFile(self._file, mode=self._mode, **kwargs)  # type: ignore
+
+        compression = CompressionType.STORED if compression_type is None else compression_type
+
+        if compression == CompressionType.BZIP2:
+            if compression_level == 0:
+                compression_level = 1
+
+        self._zipfile = ZipFile(
+            self._file, mode=self._mode, compression=compression, compresslevel=compression_level, **kwargs
+        )  # type: ignore
 
     def __enter__(self) -> Self:
         return self
@@ -190,8 +222,6 @@ class ZipFileAdapter(BaseArchiveAdapter):
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         file = realpath(file)
 
@@ -201,35 +231,23 @@ class ZipFileAdapter(BaseArchiveAdapter):
         if not file.is_file():
             raise ValueError(f"The specified file '{file}' either does not exist or is not a regular file!")
 
-        if compression_type == CompressionType.BZIP2:
-            if compression_level == 0:
-                compression_level = 1
-
-        self._zipfile.write(file, arcname=arcname, compress_type=compression_type, compresslevel=compression_level)
+        self._zipfile.write(file, arcname=arcname)
 
     def write_text(
         self,
         data: str,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
-        self._zipfile.writestr(
-            get_member_name(arcname), data, compress_type=compression_type, compresslevel=compression_level
-        )
+        self._zipfile.writestr(get_member_name(arcname), data)
 
     def write_bytes(
         self,
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
-        self._zipfile.writestr(
-            get_member_name(arcname), data, compress_type=compression_type, compresslevel=compression_level
-        )
+        self._zipfile.writestr(get_member_name(arcname), data)
 
     def writeall(
         self,
@@ -238,8 +256,6 @@ class ZipFileAdapter(BaseArchiveAdapter):
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         dir = realpath(dir)
 
@@ -258,7 +274,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
 
         for file in files:
             arcname = file.relative_to(root)
-            self.write(file, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
+            self.write(file, arcname=arcname)
 
     def close(self) -> None:
         self._zipfile.close()

@@ -28,19 +28,41 @@ if TYPE_CHECKING:
 class SevenZipFileAdapter(BaseArchiveAdapter):
     @overload
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None: ...
 
     @overload
-    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, **kwargs: Any) -> None: ...
+    def __init__(
+        self,
+        file: StrPath,
+        mode: str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
+    ) -> None: ...
 
     def __init__(
-        self, file: StrPath, mode: OpenArchiveMode | str = "r", *, password: str | None = None, **kwargs: Any
+        self,
+        file: StrPath,
+        mode: OpenArchiveMode | str = "r",
+        *,
+        password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | None = None,
+        **kwargs: Any,
     ) -> None:
         self._file = realpath(file)
         self._mode = mode[0]
         self._password = password
-        self._kwargs = kwargs
 
         # Bit of a hack to support 'x' and 'a' modes properly
         if self._mode == "x":
@@ -59,7 +81,7 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
             # We can just set it to 'w'
             self._mode = "w"
 
-        self._sevenzipfile = SevenZipFile(self._file, mode=self._mode, password=self._password)
+        self._sevenzipfile = SevenZipFile(self._file, mode=self._mode, password=self._password, **kwargs)
 
     def __enter__(self) -> Self:
         return self
@@ -243,8 +265,6 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         file = realpath(file)
 
@@ -264,8 +284,6 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         data: str,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         self._sevenzipfile.writestr(data=data, arcname=get_member_name(arcname))
 
@@ -274,8 +292,6 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         self._sevenzipfile.writestr(data=data, arcname=get_member_name(arcname))
 
@@ -286,8 +302,6 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         dir = realpath(dir)
 
