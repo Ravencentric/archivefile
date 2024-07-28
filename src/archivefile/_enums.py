@@ -52,9 +52,6 @@ class CompressionType(IntEnum):
                 case int():
                     return cls(key)
 
-                case CompressionType.STORED | CompressionType.DEFLATED | CompressionType.BZIP2 | CompressionType.LZMA:
-                    return key
-
                 case _:
                     return cls[default.upper()]
         except (KeyError, ValueError):
