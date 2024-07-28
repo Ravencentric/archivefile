@@ -52,7 +52,7 @@ class CompressionType(IntEnum):
                 case int():
                     return cls(key)
 
-                case CompressionType():
+                case CompressionType.STORED | CompressionType.DEFLATED | CompressionType.BZIP2 | CompressionType.LZMA:
                     return key
 
                 case _:

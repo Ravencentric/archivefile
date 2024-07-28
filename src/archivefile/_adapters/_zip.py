@@ -56,16 +56,20 @@ class ZipFileAdapter(BaseArchiveAdapter):
         self._password = password
         self._pwd = password.encode() if password else None
 
-        compression = CompressionType.get(compression_type)
-        compresslevel = clamp_compression_level(compression_level) if compression_level else None
+        self._compression_type = CompressionType.get(compression_type)
+        self._compression_level = clamp_compression_level(compression_level) if compression_level is not None else None
 
-        if compression == CompressionType.BZIP2:
+        if self._compression_type is CompressionType.BZIP2:
             # BZIP2 only supports 1-9
-            if compresslevel == 0:
-                compresslevel = 1
+            if self._compression_level == 0:
+                self._compression_level = 1
 
         self._zipfile = ZipFile(
-            self._file, mode=self._mode, compression=compression, compresslevel=compresslevel, **kwargs
+            self._file,
+            mode=self._mode,
+            compression=self._compression_type,
+            compresslevel=self._compression_level,
+            **kwargs,
         )  # type: ignore
 
     def __enter__(self) -> Self:
@@ -87,6 +91,18 @@ class ZipFileAdapter(BaseArchiveAdapter):
     @property
     def password(self) -> str | None:
         return self._password
+
+    @property
+    def compression_type(self) -> CompressionType | None:
+        return self._compression_type
+
+    @property
+    def compression_level(self) -> CompressionLevel | None:
+        return self._compression_level  # type: ignore
+
+    @property
+    def adapter(self) -> str:
+        return self.__class__.__name__
 
     def get_member(self, member: StrPath) -> ArchiveMember:
         name = get_member_name(member)

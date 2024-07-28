@@ -168,6 +168,21 @@ class ArchiveFile(BaseArchiveAdapter):
         """Archive password."""
         return self._adapter.password
 
+    @property
+    def compression_type(self) -> CompressionType | None:
+        """Compression type used for writing."""
+        return self._adapter.compression_type
+
+    @property
+    def compression_level(self) -> CompressionLevel | None:
+        """Compression type used for writing."""
+        return self._adapter.compression_level  # type: ignore
+
+    @property
+    def adapter(self) -> str:
+        """Name of the underlying adapter class, useful for debugging."""
+        return self._adapter.adapter
+
     @validate_call
     def get_member(self, member: StrPath) -> ArchiveMember:
         """

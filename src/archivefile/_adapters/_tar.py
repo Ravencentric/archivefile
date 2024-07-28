@@ -78,6 +78,22 @@ class TarFileAdapter(BaseArchiveAdapter):
     def password(self) -> str | None:
         return self._password
 
+    @property
+    def compression_type(self) -> CompressionType | None:
+        # TarFile doesn't support this, so this will always be None.
+        # Only ZipFile supports this
+        return None
+
+    @property
+    def compression_level(self) -> CompressionLevel | None:
+        # TarFile doesn't support this, so this will always be None.
+        # Only ZipFile supports this
+        return None
+
+    @property
+    def adapter(self) -> str:
+        return self.__class__.__name__
+
     def get_member(self, member: StrPath) -> ArchiveMember:
         name = get_member_name(member)
 

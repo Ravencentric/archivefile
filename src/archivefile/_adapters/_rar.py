@@ -81,6 +81,20 @@ class RarFileAdapter(BaseArchiveAdapter):
     def password(self) -> str | None:
         return self._password
 
+    @property
+    def compression_type(self) -> CompressionType | None:
+        # RarFile doesn't support writing, so this will always be None
+        return None
+
+    @property
+    def compression_level(self) -> CompressionLevel | None:
+        # RarFile doesn't support writing, so this will always be None
+        return None
+
+    @property
+    def adapter(self) -> str:
+        return self.__class__.__name__
+
     def get_member(self, member: StrPath) -> ArchiveMember:
         name = get_member_name(member)
 
