@@ -19,7 +19,9 @@ from archivefile._adapters._zip import ZipFileAdapter
         (Path("tests/test_data/source_STORE.zip"), CompressionType.STORED, None, "ZipFileAdapter"),
     ],
 )
-def test_core_properties(file: Path, compression_type: CompressionType | None, compression_level: int | None, adapter: str) -> None:
+def test_core_properties(
+    file: Path, compression_type: CompressionType | None, compression_level: int | None, adapter: str
+) -> None:
     with ArchiveFile(file) as archive:
         assert archive.file == file.resolve()
         assert archive.mode == "r"
@@ -49,6 +51,7 @@ def test_zip_handler_properties() -> None:
         assert archive.compression_type is CompressionType.STORED
         assert archive.compression_level is None
         assert archive.adapter == "ZipFileAdapter"
+
 
 def test_tar_handler_properties() -> None:
     file = "tests/test_data/source_GNU.tar"

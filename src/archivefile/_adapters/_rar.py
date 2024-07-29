@@ -196,7 +196,7 @@ class RarFileAdapter(BaseArchiveAdapter):
             self._rarfile.extract(member=name, path=destination, pwd=self._password)
         except NoRarEntry:
             raise KeyError(f"{name} not found in {self._file}")
-        
+
         return destination / name
 
     def extractall(
