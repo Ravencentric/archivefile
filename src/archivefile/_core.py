@@ -222,12 +222,12 @@ class ArchiveFile(BaseArchiveAdapter):
     @validate_call
     def get_members(self) -> Generator[ArchiveMember]:
         """
-        Retrieve all members of the archive as a tuple of ArchiveMember objects.
+        Retrieve all members of the archive as a generator of `ArchiveMember` objects.
 
         Yields
         -------
-        Generator[ArchiveMember]
-            Members of the archive as a generator of ArchiveMember objects.
+        ArchiveMember
+            Each member of the archive as an `ArchiveMember` object.
 
         Examples
         --------
