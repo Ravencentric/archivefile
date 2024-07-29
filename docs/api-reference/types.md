@@ -1,5 +1,6 @@
 ::: archivefile._types.UTCDateTime
 ::: archivefile._types.StrPath
+::: archivefile._types.CollectionOf
 ::: archivefile._types.OpenArchiveMode
 ::: archivefile._types.TreeStyle
 ::: archivefile._types.TableStyle

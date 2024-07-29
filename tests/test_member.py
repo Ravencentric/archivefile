@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from archivefile import ArchiveFile
 
 files = (
@@ -33,47 +34,47 @@ files = (
 )
 
 
-def test_get_members() -> None:
-    for file in files:
-        with ArchiveFile(file) as archive:
-            assert len(archive.get_members()) == 53
+@pytest.mark.parametrize("file", files)
+def test_get_members(file: Path) -> None:
+    with ArchiveFile(file) as archive:
+        assert len(tuple(archive.get_members())) == 53
 
 
-def test_get_members_without_context_manager() -> None:
-    for file in files:
-        archive = ArchiveFile(file)
-        total_members = len(archive.get_members())
-        archive.close()
-        assert total_members == 53
+@pytest.mark.parametrize("file", files)
+def test_get_members_without_context_manager(file: Path) -> None:
+    archive = ArchiveFile(file)
+    total_members = len(tuple(archive.get_members()))
+    archive.close()
+    assert total_members == 53
 
 
-def test_get_names() -> None:
-    for file in files:
-        with ArchiveFile(file) as archive:
-            assert len(archive.get_names()) == 53
+@pytest.mark.parametrize("file", files)
+def test_get_names(file: Path) -> None:
+    with ArchiveFile(file) as archive:
+        assert len(archive.get_names()) == 53
 
 
-def test_get_names_without_context_manager() -> None:
-    for file in files:
-        archive = ArchiveFile(file)
-        total_members = len(archive.get_names())
-        archive.close()
-        assert total_members == 53
+@pytest.mark.parametrize("file", files)
+def test_get_names_without_context_manager(file: Path) -> None:
+    archive = ArchiveFile(file)
+    total_members = len(archive.get_names())
+    archive.close()
+    assert total_members == 53
 
 
-def test_member_and_names() -> None:
-    for file in files:
-        with ArchiveFile(file) as archive:
-            names = tuple([member.name for member in archive.get_members()])
-            assert archive.get_names() == names
-
-
-def test_members_and_names_without_context_manager() -> None:
-    for file in files:
-        archive = ArchiveFile(file)
+@pytest.mark.parametrize("file", files)
+def test_member_and_names(file: Path) -> None:
+    with ArchiveFile(file) as archive:
         names = tuple([member.name for member in archive.get_members()])
         assert archive.get_names() == names
-        archive.close()
+
+
+@pytest.mark.parametrize("file", files)
+def test_members_and_names_without_context_manager(file: Path) -> None:
+    archive = ArchiveFile(file)
+    names = tuple([member.name for member in archive.get_members()])
+    assert archive.get_names() == names
+    archive.close()
 
 
 def test_get_member_files() -> None:

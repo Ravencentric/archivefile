@@ -1,81 +1,7 @@
 from __future__ import annotations
 
-from tarfile import TarFile
-from zipfile import ZipFile
-
-from archivefile._enums import CommonExtensions
-from archivefile._utils import check_extension, filter_kwargs, is_archive
-from py7zr import SevenZipFile
-
-
-def test_filter_kwargs() -> None:
-    zipfile_kwargs = {
-        "file": None,
-        "mode": "r",
-        "compression": "ZIP_STORED",
-        "allowZip64": True,
-        "compresslevel": None,
-        "strict_timestamps": True,
-    }
-
-    tarfile_kwargs = {
-        "name": None,
-        "mode": "r",
-        "fileobj": None,
-        "format": None,
-        "tarinfo": None,
-        "dereference": None,
-        "ignore_zeros": None,
-        "encoding": None,
-        "errors": "surrogateescape",
-        "pax_headers": None,
-        "debug": None,
-        "errorlevel": None,
-        "copybufsize": None,
-    }
-
-    sevenzipfile_kwargs = {
-        "file": None,
-        "mode": "r",
-        "filters": None,
-        "dereference": None,
-        "password": None,
-        "header_encryption": False,
-        "blocksize": None,
-        "mp": False,
-    }
-
-    kwargs = zipfile_kwargs | tarfile_kwargs | sevenzipfile_kwargs
-
-    assert filter_kwargs(ZipFile, kwargs=kwargs) == {
-        "compression": "ZIP_STORED",
-        "allowZip64": True,
-        "compresslevel": None,
-        "strict_timestamps": True,
-    }
-
-    assert filter_kwargs(TarFile, kwargs=kwargs) == {
-        "fileobj": None,
-        "format": None,
-        "tarinfo": None,
-        "dereference": None,
-        "ignore_zeros": None,
-        "encoding": None,
-        "errors": "surrogateescape",
-        "pax_headers": None,
-        "debug": None,
-        "errorlevel": None,
-        "copybufsize": None,
-    }
-
-    assert filter_kwargs(SevenZipFile, kwargs=kwargs) == {
-        "filters": None,
-        "dereference": None,
-        "password": None,
-        "header_encryption": False,
-        "blocksize": None,
-        "mp": False,
-    }
+import pytest
+from archivefile._utils import clamp_compression_level, is_archive
 
 
 def test_is_archive() -> None:
@@ -85,6 +11,26 @@ def test_is_archive() -> None:
     assert is_archive("non-existent-file.py") is False
 
 
-def test_check_extension() -> None:
-    assert check_extension([".zip", ".cbz"], CommonExtensions.ZIP) is True
-    assert check_extension([".txt", ".py"], CommonExtensions.ZIP) is False
+@pytest.mark.parametrize(
+    "level,expected",
+    [
+        (-1212, 0),
+        (-5, 0),
+        (-1, 0),
+        (0, 0),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (5, 5),
+        (6, 6),
+        (7, 7),
+        (8, 8),
+        (9, 9),
+        (10, 9),
+        (11, 9),
+        (1123, 9),
+    ],
+)
+def test_clamp_compression_level(level: int, expected: int) -> None:
+    assert clamp_compression_level(level) == expected

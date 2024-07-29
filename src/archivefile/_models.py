@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, ByteSize, ValidationInfo, field_validator
+from pydantic import BaseModel, ByteSize, ConfigDict, ValidationInfo, field_validator
 
 from archivefile._types import UTCDateTime
 
@@ -11,7 +11,9 @@ from archivefile._types import UTCDateTime
 class ArchiveMember(BaseModel):
     """Represents a member of an archive file"""
 
-    name: str = ""
+    model_config = ConfigDict(frozen=True)
+
+    name: str
     """Name of the archive member."""
 
     size: ByteSize = ByteSize(0)

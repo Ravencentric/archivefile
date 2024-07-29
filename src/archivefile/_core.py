@@ -1,35 +1,61 @@
 from __future__ import annotations
 
-import tarfile
-from collections.abc import Iterable
-from datetime import datetime
+import re
 from pathlib import Path
-from tarfile import TarFile, is_tarfile
-from tempfile import TemporaryDirectory
+from tarfile import is_tarfile
 from types import TracebackType
-from typing import Any
-from zipfile import ZipFile, is_zipfile
+from typing import Any, overload
+from zipfile import is_zipfile
 
-from py7zr import SevenZipFile, is_7zfile
+from py7zr import is_7zfile
 from pydantic import validate_call
-from rarfile import RarFile, RarInfo, is_rarfile
-from typing_extensions import Literal, Self
+from rarfile import is_rarfile, is_rarfile_sfx
+from typing_extensions import Generator, Self
 
-from archivefile._enums import CommonExtensions, CompressionType
-from archivefile._exceptions import UnsupportedArchiveOperation
+from archivefile._adapters._base import BaseArchiveAdapter
+from archivefile._adapters._rar import RarFileAdapter
+from archivefile._adapters._sevenzip import SevenZipFileAdapter
+from archivefile._adapters._tar import TarFileAdapter
+from archivefile._adapters._zip import ZipFileAdapter
+from archivefile._enums import CompressionType
 from archivefile._models import ArchiveMember
-from archivefile._types import CompressionLevel, ErrorHandler, OpenArchiveMode, SortBy, StrPath, TableStyle, TreeStyle
-from archivefile._utils import check_extension, filter_kwargs, realpath
+from archivefile._types import (
+    CollectionOf,
+    CompressionLevel,
+    ErrorHandler,
+    OpenArchiveMode,
+    SortBy,
+    StrPath,
+    TableStyle,
+    TreeStyle,
+)
+from archivefile._utils import realpath
 
 
-class ArchiveFile:
+class ArchiveFile(BaseArchiveAdapter):
+    # fmt: off
+    @overload
+    def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...
+
+    @overload
+    def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
+    # fmt: on
+
     @validate_call
     def __init__(
         self,
         file: StrPath,
-        mode: OpenArchiveMode = "r",
+        mode: OpenArchiveMode | str = "r",
         *,
         password: str | None = None,
+        compression_type: CompressionType | None = None,
+        compression_level: CompressionLevel | int | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -43,18 +69,29 @@ class ArchiveFile:
             Specifies the mode for opening the archive file.
         password : str, optional
             Password for encrypted archive files.
+        compression_type : CompressionType, optional
+            The compression method to be used for writing zip files.
+            Has no effect on reading zip files.
+            Has no offect on archives other than zip files.
+        compression_level : CompressionLevel, optional
+            The compression level to be used for writing zip files.
+            Has no effect on reading zip files.
+            Has no offect on archives other than zip files.
         kwargs : Any
-            Keyword arugments to pass to the underlying handler.
-            Kwargs that are not relevent to the current handler will automatically
-            be removed so you don't have to worry about accidentally passing ZipFile's kwargs to TarFile.
+            Keyword arugments to pass to the underlying library.
 
         Returns
         -------
         None
 
+        Raises
+        ------
+        NotImplementedError
+            Raised when the archive format is unsupported
+
         References
         ----------
-        ArchiveFile currently supports the following handlers:
+        ArchiveFile currently supports the following:
 
         - [`ZipFile`][zipfile.ZipFile]
         - [`TarFile`][tarfile.TarFile.open]
@@ -65,76 +102,51 @@ class ArchiveFile:
         self._mode = mode
         self._password = password
         self._kwargs = kwargs
-        self._initialize_handler()
+        self._compression_type = compression_type
+        self._compression_level = compression_level
+        self._initialize_adapter()
 
-    def _initialize_handler(self) -> None:
-        archive = self._file
-        extensions = archive.suffixes
-        kwargs = self._kwargs
-        tarfile_mode = self._mode
-        mode = self._mode[0]  # reduce stuff like `r:gz` or `w:gz` down to `r` and `w` for non tarfiles
-        write = not mode.startswith("r")
+    def _initialize_adapter(self) -> None:
+        if not self._file.exists():
+            if not self._mode.startswith("r"):
+                filename = self._file.name.lower()
 
-        if not archive.exists():
-            if write:
-                if check_extension(extensions, CommonExtensions.TAR):
-                    self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))
-                    # https://docs.python.org/3/library/tarfile.html#supporting-older-python-versions
-                    self._handler.extraction_filter = getattr(tarfile, "data_filter", (lambda member, path: member))
-
-                elif check_extension(extensions, CommonExtensions.ZIP):
-                    self._handler = ZipFile(archive, mode=mode, **filter_kwargs(ZipFile, kwargs=kwargs))  # type: ignore
-
-                elif check_extension(extensions, CommonExtensions.SEVENZIP):
-                    # SevenZip doesn't support mode='x' at all and only supports mode='a' on existing files
-                    # Since 'x' and 'a' are equivalent to 'w' in this case (i.e, when archive file doesn't already exist)
-                    # We can just set it to 'w'
-                    self._handler = SevenZipFile(
-                        archive, mode="w", password=self._password, **filter_kwargs(SevenZipFile, kwargs=kwargs)
-                    )  # type: ignore
-
-                elif check_extension(extensions, CommonExtensions.RAR):
-                    raise UnsupportedArchiveOperation('Cannot write a rar file. Rar files only support mode="r"!')
+                if re.search(r"\.(zip|cbz)$", filename):
+                    adapter = ZipFileAdapter
+                elif re.search(r"\.((tar(\.(bz2|gz|xz))?)|(cbt))$", filename):
+                    adapter = TarFileAdapter  # type: ignore
+                elif re.search(r"\.(7z|cb7)$", filename):
+                    adapter = SevenZipFileAdapter  # type: ignore
+                elif re.search(r"\.(rar|cbr)$", filename):
+                    adapter = RarFileAdapter  # type: ignore
                 else:
-                    raise UnsupportedArchiveOperation(f"Unsupported archive format: {archive.suffix}")
+                    raise NotImplementedError(f"Unsupported archive format: {self._file}")
             else:
-                raise FileNotFoundError(archive)
+                raise FileNotFoundError(self._file)
 
-        elif is_tarfile(archive):
-            self._handler = tarfile.open(archive, mode=tarfile_mode, **filter_kwargs(TarFile, kwargs=kwargs))
+        elif is_zipfile(self._file):
+            adapter = ZipFileAdapter
 
-        elif is_zipfile(archive):
-            self._handler = ZipFile(archive, mode=mode, **filter_kwargs(ZipFile, kwargs=kwargs))  # type: ignore
+        elif is_tarfile(self._file):
+            adapter = TarFileAdapter  # type: ignore
 
-        elif is_7zfile(archive):
-            if mode == "x":
-                raise FileExistsError(archive)
+        elif is_7zfile(self._file):
+            adapter = SevenZipFileAdapter  # type: ignore
 
-            self._handler = SevenZipFile(
-                archive, mode=mode, password=self._password, **filter_kwargs(SevenZipFile, kwargs=kwargs)
-            )  # type: ignore
-
-        elif is_rarfile(archive):
-            if mode != "r":
-                raise UnsupportedArchiveOperation('RarFiles only support mode="r"!')
-            self._handler = RarFile(archive, mode="r", **filter_kwargs(RarFile, kwargs=kwargs))
+        elif is_rarfile(self._file) or is_rarfile_sfx(self._file):
+            adapter = RarFileAdapter  # type: ignore
 
         else:
-            raise UnsupportedArchiveOperation(f"Unsupported archive format: {archive.suffix}")
+            raise NotImplementedError(f"Unsupported archive format: {self._file}")
 
-    @staticmethod
-    def _get_member_name(member: StrPath | ArchiveMember) -> str:
-        """Get the member name from a string, path, or ArchiveMember"""
-
-        if isinstance(member, ArchiveMember):
-            return member.name
-
-        if isinstance(member, Path):
-            # Do not expand/resolve member if the input is a path
-            # since that can change the meaning of the name
-            return member.relative_to(member.anchor).as_posix()
-
-        return member
+        self._adapter = adapter(
+            self._file,
+            self._mode,
+            password=self._password,
+            compression_type=self._compression_type,
+            compression_level=self._compression_level,
+            **self._kwargs,
+        )
 
     def __enter__(self) -> Self:
         return self
@@ -142,27 +154,37 @@ class ArchiveFile:
     def __exit__(
         self, type: type[BaseException] | None, value: BaseException | None, traceback: TracebackType | None
     ) -> None:
-        self._handler.close()
+        self._adapter.close()
 
     @property
     def file(self) -> Path:
         """Path to the archive file."""
-        return self._file
+        return self._adapter.file
 
     @property
     def mode(self) -> OpenArchiveMode:
         """Mode in which the archive file was opened."""
-        return self._mode
+        return self._adapter.mode
 
     @property
     def password(self) -> str | None:
         """Archive password."""
-        return self._password
+        return self._adapter.password
 
     @property
-    def handler(self) -> str:
-        """Name of the handler used."""
-        return self._handler.__class__.__name__
+    def compression_type(self) -> CompressionType | None:
+        """Compression type used for writing."""
+        return self._adapter.compression_type
+
+    @property
+    def compression_level(self) -> CompressionLevel | None:
+        """Compression level used for writing."""
+        return self._adapter.compression_level  # type: ignore
+
+    @property
+    def adapter(self) -> str:
+        """Name of the underlying adapter class, useful for debugging."""
+        return self._adapter.adapter
 
     @validate_call
     def get_member(self, member: StrPath) -> ArchiveMember:
@@ -179,6 +201,11 @@ class ArchiveFile:
         ArchiveMember
             Represents a member of the archive.
 
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
+
         Examples
         --------
         ```py
@@ -189,71 +216,17 @@ class ArchiveFile:
             # ArchiveMember(name='README.md', size=3799, compressed_size=3799, datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc), checksum=5251, is_dir=False, is_file=True)
         ```
         """
-
-        member = self._get_member_name(member)
-
-        if isinstance(self._handler, TarFile):
-            tarinfo = self._handler.getmember(member)
-            return ArchiveMember(
-                name=tarinfo.name,
-                size=tarinfo.size,  # type: ignore
-                compressed_size=tarinfo.size,  # type: ignore
-                datetime=tarinfo.mtime,  # type: ignore
-                checksum=tarinfo.chksum,
-                is_dir=tarinfo.isdir(),
-                is_file=tarinfo.isfile(),
-            )
-
-        elif isinstance(self._handler, ZipFile):
-            zipinfo = self._handler.getinfo(member)
-            return ArchiveMember(
-                name=zipinfo.filename,
-                size=zipinfo.file_size,
-                compressed_size=zipinfo.compress_size,
-                datetime=datetime(*zipinfo.date_time),
-                checksum=zipinfo.CRC,
-                is_dir=zipinfo.is_dir(),
-                is_file=not zipinfo.is_dir(),
-            )
-
-        elif isinstance(self._handler, SevenZipFile):
-            member_list = self._handler.list()
-            # Unlike the rest, SevenZip member directories do not end with `/`, so we need to strip it out
-            sevenzipinfo = [fileinfo for fileinfo in member_list if fileinfo.filename == member.removesuffix("/")][0]
-            return ArchiveMember(
-                name=sevenzipinfo.filename,
-                size=sevenzipinfo.uncompressed,
-                # Sometimes sevenzip can return 0 for compressed size when there's no compression
-                # in that case we simply return the uncompressed size instead.
-                compressed_size=sevenzipinfo.compressed or sevenzipinfo.uncompressed,
-                datetime=sevenzipinfo.creationtime,
-                checksum=sevenzipinfo.crc32,
-                is_dir=sevenzipinfo.is_directory,
-                is_file=not sevenzipinfo.is_directory,
-            )
-
-        else:
-            rarinfo: RarInfo = self._handler.getinfo(member)
-            is_dir = True if rarinfo.filename.endswith("/") else False
-            return ArchiveMember(
-                name=rarinfo.filename,
-                size=rarinfo.file_size,
-                compressed_size=rarinfo.compress_size,
-                datetime=datetime(*rarinfo.date_time),
-                checksum=rarinfo.CRC,
-                is_dir=is_dir,
-                is_file=not is_dir,
-            )
+        return self._adapter.get_member(member)
 
     @validate_call
-    def get_members(self) -> tuple[ArchiveMember, ...]:
+    def get_members(self) -> Generator[ArchiveMember]:
         """
         Retrieve all members of the archive as a tuple of ArchiveMember objects.
 
-        Returns
+        Yields
         -------
-        tuple[ArchiveMember, ...]
-            Members of the archive as a tuple of ArchiveMember objects.
+        Generator[ArchiveMember]
+            Members of the archive as a generator of ArchiveMember objects.
 
         Examples
         --------
@@ -261,28 +234,13 @@ class ArchiveFile:
         from archivefile import ArchiveFile
 
         with ArchiveFile("source.tar") as archive:
-            archive.get_members()
-            # (
-            #     ArchiveMember(name="project/pyproject.toml", size=1920, compressed_size=1920, datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc), checksum=6038, is_dir=False, is_file=True),
-            #     ArchiveMember(name="project/src", size=0, compressed_size=0, datetime=datetime.datetime(2024, 4, 10, 20, 10, 57, tzinfo=datetime.timezone.utc), checksum=4927, is_dir=True, is_file=False),
-            # )
+            for member in archive.get_members():
+                print(member.name)
+                # project/pyproject.toml
+                # project/src
         ```
         """
-        if isinstance(self._handler, TarFile):
-            names = self._handler.getnames()
-            return tuple([self.get_member(name) for name in names])
-
-        elif isinstance(self._handler, ZipFile):
-            names = self._handler.namelist()
-            return tuple([self.get_member(name) for name in names])
-
-        elif isinstance(self._handler, SevenZipFile):
-            names = self._handler.getnames()
-            return tuple([self.get_member(name) for name in names])
-
-        else:
-            names = self._handler.namelist()
-            return tuple([self.get_member(name) for name in names])
+        return self._adapter.get_members()
 
     @validate_call
     def get_names(self) -> tuple[str, ...]:
@@ -307,17 +265,7 @@ class ArchiveFile:
             # )
         ```
         """
-        if isinstance(self._handler, TarFile):
-            return tuple(self._handler.getnames())
-
-        elif isinstance(self._handler, ZipFile):
-            return tuple(self._handler.namelist())
-
-        elif isinstance(self._handler, SevenZipFile):
-            return tuple(self._handler.getnames())
-
-        else:
-            return tuple(self._handler.namelist())
+        return self._adapter.get_names()
 
     def print_tree(
         self,
@@ -366,14 +314,7 @@ class ArchiveFile:
             #         └── __init__.py
         ```
         """
-        try:
-            from bigtree.tree.construct import list_to_tree
-        except ModuleNotFoundError:  # pragma: no cover
-            raise ModuleNotFoundError("The 'print_tree()' method requires the 'bigtree' dependency.")
-
-        paths = [f"{self.file.name}/{member}" for member in self.get_names()]
-        tree = list_to_tree(paths)  # type: ignore
-        tree.show(max_depth=max_depth, style=style)
+        self._adapter.print_tree(max_depth=max_depth, style=style)
 
     @validate_call
     def print_table(
@@ -435,32 +376,7 @@ class ArchiveFile:
             # | hello-world/tests/__init__.py           | 2024-05-02T09:41:24+00:00 | File   | 0B   | 0B              |
         ```
         """
-        try:
-            from rich import box as RichBox
-            from rich import print as richprint
-            from rich.table import Table as RichTable
-        except ModuleNotFoundError:  # pragma: no cover
-            raise ModuleNotFoundError("The 'print_table()' method requires the 'rich' dependency.")
-
-        if title is None:
-            title = self.file.name
-
-        members = self.get_members()
-        table = RichTable(title=title, box=getattr(RichBox, style.upper()), **kwargs)
-        table.add_column("Name", no_wrap=True)
-        table.add_column("Date modified", no_wrap=True)
-        table.add_column("Type", no_wrap=True)
-        table.add_column("Size", no_wrap=True)
-        table.add_column("Compressed Size", no_wrap=True)
-        for member in sorted(members, key=lambda member: getattr(member, sort_by), reverse=descending):
-            table.add_row(
-                member.name,
-                member.datetime.isoformat(),
-                "File" if member.is_file else "Folder",
-                member.size.human_readable(),
-                member.compressed_size.human_readable(),
-            )
-        richprint(table)
+        self._adapter.print_table(title=title, style=style, sort_by=sort_by, descending=descending, **kwargs)
 
     @validate_call
     def extract(self, member: StrPath | ArchiveMember, *, destination: StrPath = Path.cwd()) -> Path:
@@ -480,6 +396,11 @@ class ArchiveFile:
         Path
             The path to the extracted file.
 
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
+
         Examples
         --------
         ```py
@@ -496,33 +417,11 @@ class ArchiveFile:
             # packages = [{include = "hello_world", from = "src"}]
         ```
         """
-        destination = realpath(destination)
-        destination.mkdir(parents=True, exist_ok=True)
-
-        member = self._get_member_name(member)
-
-        if isinstance(self._handler, TarFile):
-            self._handler.extract(member=member, path=destination)
-            return destination / member
-
-        elif isinstance(self._handler, ZipFile):
-            self._handler.extract(
-                member=member, path=destination, pwd=self._password.encode() if self._password else None
-            )
-            return destination / member
-
-        elif isinstance(self._handler, SevenZipFile):
-            self._handler.extract(path=destination, targets=[member])
-            self._handler.reset()
-            return destination / member
-
-        else:
-            self._handler.extract(member=member, path=destination, pwd=self._password)
-            return destination / member
+        return self._adapter.extract(member, destination=destination)
 
     @validate_call
     def extractall(
-        self, *, destination: StrPath = Path.cwd(), members: Iterable[StrPath | ArchiveMember] | None = None
+        self, *, destination: StrPath = Path.cwd(), members: CollectionOf[StrPath | ArchiveMember] | None = None
     ) -> Path:
         """
         Extract all the members of the archive to the destination directory.
@@ -532,14 +431,19 @@ class ArchiveFile:
         destination : StrPath
             The path to the directory where the members will be extracted.
             If not specified, the current working directory is used as the default destination.
-        members : Iterable[StrPath | ArchiveMember], optional
-            Iterable of member names or ArchiveMember objects to extract.
+        members : CollectionOf[StrPath | ArchiveMember], optional
+            Collection of member names or ArchiveMember objects to extract.
             Default is `None` which will extract all members.
 
         Returns
         -------
         Path
             The path to the destination directory.
+
+        Raises
+        ------
+        KeyError
+            Raised if any member in members was not found in the archive.
 
         Examples
         --------
@@ -561,47 +465,7 @@ class ArchiveFile:
             # /source/hello-world/tests/__init__.py
         ```
         """
-        destination = realpath(destination)
-        destination.mkdir(parents=True, exist_ok=True)
-
-        names: list[str] = []
-        if members:
-            for member in members:
-                names.append(self._get_member_name(member))
-
-        if isinstance(self._handler, TarFile):
-            if names:
-                tar_members = [self._handler.getmember(name) for name in names]
-                self._handler.extractall(path=destination, members=tar_members)
-            else:
-                self._handler.extractall(path=destination)
-            return destination
-
-        elif isinstance(self._handler, ZipFile):
-            password = self._password.encode() if self._password else None
-
-            if names:
-                self._handler.extractall(path=destination, members=names, pwd=password)
-            else:
-                self._handler.extractall(path=destination, pwd=password)
-            return destination
-
-        elif isinstance(self._handler, SevenZipFile):
-            # SevenZipFile doesn't have a members=[...] parameter like the rest
-            if names:
-                self._handler.extract(path=destination, targets=names, recursive=True)
-            else:
-                self._handler.extractall(path=destination)
-
-            self._handler.reset()
-            return destination
-
-        else:
-            if names:
-                self._handler.extractall(path=destination, members=names, pwd=self._password)
-            else:
-                self._handler.extractall(path=destination, members=names, pwd=self._password)
-            return destination
+        return self._adapter.extractall(destination=destination, members=members)
 
     @validate_call
     def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:
@@ -618,6 +482,11 @@ class ArchiveFile:
         bytes
             The contents of the file as bytes.
 
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
+
         Examples
         --------
         ```py
@@ -629,32 +498,7 @@ class ArchiveFile:
             # b'[tool.poetry]\\r\\nname = "hello-world"\\r\\nversion = "0.1.0"\\r\\ndescription = ""\\r\\nreadme = "README.md"\\r\\npackages = [{include = "hello_world", from = "src"}]\\r\\n'
         ```
         """
-        member = self.get_member(self._get_member_name(member)) if not isinstance(member, ArchiveMember) else member
-
-        if member.is_dir:
-            return b""
-        
-        name = member.name
-
-        if isinstance(self._handler, TarFile):
-            fileobj = self._handler.extractfile(name)
-            if fileobj is None: # pragma: no cover
-                return b""
-            return fileobj.read()
-
-        elif isinstance(self._handler, ZipFile):
-            return self._handler.read(name, self._password)
-
-        elif isinstance(self._handler, SevenZipFile):
-            data = self._handler.read(targets=[name])
-            if data is None:  # pragma: no cover
-                return b""
-
-            self._handler.reset()
-            return data[name].read()
-
-        else:
-            return self._handler.read(name, self._password)
+        return self._adapter.read_bytes(member)
 
     @validate_call
     def read_text(
@@ -681,6 +525,11 @@ class ArchiveFile:
         str
             The contents of the file as a string.
 
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
+
         References
         ----------
         - [Standard Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings)
@@ -702,7 +551,7 @@ class ArchiveFile:
             # packages = [{include = "hello_world", from = "src"}]
         ```
         """
-        return self.read_bytes(member).decode(encoding, errors)
+        return self._adapter.read_text(member, encoding=encoding, errors=errors)
 
     @validate_call
     def write(
@@ -710,8 +559,6 @@ class ArchiveFile:
         file: StrPath,
         *,
         arcname: StrPath | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write a single file to the archive.
@@ -723,21 +570,10 @@ class ArchiveFile:
         arcname : StrPath, optional
             Name which the file will have in the archive.
             Default is the basename of the file.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Examples
         --------
@@ -758,34 +594,7 @@ class ArchiveFile:
             #     └── eggs.txt
         ```
         """
-
-        file = realpath(file)
-
-        if arcname is None:
-            arcname = file.name
-
-        if not file.is_file():
-            raise UnsupportedArchiveOperation(
-                f"The specified file '{file}' either does not exist or is not a regular file!"
-            )
-
-        if isinstance(self._handler, TarFile):
-            self._handler.add(file, arcname=arcname)
-
-        elif isinstance(self._handler, ZipFile):
-            if compression_type == CompressionType.BZIP2:
-                if compression_level == 0:
-                    compression_level = 1
-
-            self._handler.write(file, arcname=arcname, compress_type=compression_type, compresslevel=compression_level)
-
-        elif isinstance(self._handler, SevenZipFile):
-            arcname = arcname.as_posix() if isinstance(arcname, Path) else arcname
-            self._handler.write(file, arcname=arcname)
-
-        else:  # pragma: no cover
-            # In reality, this can never happen since it'll exit in the constructor before ever reaching here
-            raise UnsupportedArchiveOperation('Cannot write a rar file. Rar files only support mode="r"!')
+        self._adapter.write(file, arcname=arcname)
 
     @validate_call
     def write_text(
@@ -793,11 +602,6 @@ class ArchiveFile:
         data: str,
         *,
         arcname: StrPath,
-        encoding: str | None = "utf-8",
-        errors: ErrorHandler | None = None,
-        newline: Literal["", "\n", "\r", "\r\n"] | None = None,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write the string `data` to a file within the archive named `arcname`.
@@ -808,36 +612,10 @@ class ArchiveFile:
             The text data to write to the archive.
         arcname : StrPath, optional
             The name which the file will have in the archive.
-        encoding : str, optional
-            Encoding of the given data. Default is `utf-8`.
-            Setting it to `None` will use platform-dependent encoding.
-        errors : ErrorHandler, optional
-            String that specifies how encoding and decoding errors are to be handled.
-        newline : Literal['', '\\n', '\\r', '\\r\\n'], optional
-            If newline is `None`, any `\\n` characters written are translated to the system default line separator, [`os.linesep`][os.linesep].
-            If newline is `''` or `\\n`, no translation takes place.
-            If newline is any of the other legal values, any `\\n` characters written are translated to the given string.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
-
-        References
-        ----------
-        - [Encodings](https://docs.python.org/3/library/codecs.html#standard-encodings)
-        - [Error Handlers](https://docs.python.org/3/library/codecs.html#error-handlers)
-        - [Newline](https://docs.python.org/3/library/functions.html#open)
 
         Examples
         --------
@@ -854,17 +632,7 @@ class ArchiveFile:
             # 'spam and eggs'
         ```
         """
-
-        arcname = Path(arcname)
-
-        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
-            tmppath = Path(tmpdir) / arcname.parent
-            tmppath.mkdir(parents=True, exist_ok=True)
-            tmpfile = tmppath / arcname.name
-            tmpfile.touch(exist_ok=True)
-            tmpfile.write_text(data=data, encoding=encoding, errors=errors, newline=newline)
-
-            self.write(tmpfile, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
+        self._adapter.write_text(data, arcname=arcname)
 
     @validate_call
     def write_bytes(
@@ -872,8 +640,6 @@ class ArchiveFile:
         data: bytes,
         *,
         arcname: StrPath,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write the bytes `data` to a file within the archive named `arcname`.
@@ -884,21 +650,10 @@ class ArchiveFile:
             The bytes data to write to the archive.
         arcname : StrPath, optional
             The name which the file will have in the archive.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Examples
         --------
@@ -915,17 +670,7 @@ class ArchiveFile:
             # b"010010100101"
         ```
         """
-
-        arcname = Path(arcname)
-
-        with TemporaryDirectory(ignore_cleanup_errors=True) as tmpdir:
-            tmppath = Path(tmpdir) / arcname.parent
-            tmppath.mkdir(parents=True, exist_ok=True)
-            tmpfile = tmppath / arcname.name
-            tmpfile.touch(exist_ok=True)
-            tmpfile.write_bytes(data)
-
-            self.write(tmpfile, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
+        self._adapter.write_bytes(data, arcname=arcname)
 
     @validate_call
     def writeall(
@@ -935,8 +680,6 @@ class ArchiveFile:
         root: StrPath | None = None,
         glob: str = "*",
         recursive: bool = True,
-        compression_type: CompressionType | None = None,
-        compression_level: CompressionLevel | None = None,
     ) -> None:
         """
         Write a directory to the archive.
@@ -952,21 +695,10 @@ class ArchiveFile:
             Only write files that match this glob pattern to the archive.
         recursive : bool, optional
             Recursively write all the files in the given directory. Default is True.
-        compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
-        compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
 
         Returns
         -------
         None
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Examples
         --------
@@ -974,7 +706,7 @@ class ArchiveFile:
         from archivefile import ArchiveFile
 
         with ArchiveFile("source.tar.gz", "w:gz") as archive:
-            archive.writeall(dir="hello-world/", glob="*.py")
+            archive.writeall(dir="hello-world/")
             archive.print_tree()
             # source.tar.gz
             # └── hello-world
@@ -988,26 +720,12 @@ class ArchiveFile:
         ```
         """
 
-        dir = realpath(dir)
-
-        if not dir.is_dir():
-            raise UnsupportedArchiveOperation(
-                f"The specified file '{dir}' either does not exist or is not a regular directory!"
-            )
-
-        if root is None:
-            root = dir.parent
-        else:
-            root = realpath(root)
-
-        if not dir.is_relative_to(root):
-            raise ValueError(f"{dir} must be relative to {root}")
-
-        files = dir.rglob(glob) if recursive else dir.glob(glob)
-
-        for file in files:
-            arcname = file.relative_to(root)
-            self.write(file, arcname=arcname, compression_type=compression_type, compression_level=compression_level)
+        self._adapter.writeall(
+            dir,
+            root=root,
+            glob=glob,
+            recursive=recursive,
+        )
 
     def close(self) -> None:
         """
@@ -1027,4 +745,8 @@ class ArchiveFile:
         archive.close()
         ```
         """
-        self._handler.close()
+        self._adapter.close()
+
+    def __repr__(self) -> str:
+        password = '"********"' if self.password else None
+        return f'{self.__class__.__name__}("{self.file}", "{self.mode}", password={password})'

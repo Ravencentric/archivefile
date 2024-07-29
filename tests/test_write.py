@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from archivefile import ArchiveFile, CompressionType
-from archivefile._enums import CommonExtensions
 
 modes = (
     "w",
@@ -21,226 +21,138 @@ modes = (
     "a:",
 )
 
-
-def test_write_zip_str(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file)
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.name).strip() == text
+extensions = ("zip", "cbz") + ("tar", "tar.bz2", "tar.gz", "tar.xz", "cbt") + ("7z", "cb7")
 
 
-def test_write_zip_str_with_compression(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_str(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = "Hello World"
+    file.write_text(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, compression_level=0, compression_type=CompressionType.BZIP2)
+    with ArchiveFile(archive_file, mode=mode) as archive:
+        archive.write(file)
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.name).strip() == text
-
-
-def test_write_zip_bytes(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file)
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.name) == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_text(file.name).strip() == text
 
 
-def test_write_zip_bytes_with_compression(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_str_with_compression(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = "Hello World"
+    file.write_text(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, compression_level=1, compression_type=CompressionType.DEFLATED)
+    with ArchiveFile(archive_file, mode=mode, compression_level=0, compression_type=CompressionType.BZIP2) as archive:
+        archive.write(file)
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.name) == text
-
-
-def test_write_zip_str_by_arcname(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, arcname=file.resolve())
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.resolve()).strip() == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_text(file.name).strip() == text
 
 
-def test_write_zip_bytes_by_arcname(tmp_path: Path) -> None:
-    for extension in CommonExtensions.ZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
+@pytest.mark.parametrize("extension", ("zip", "cbz"))
+@pytest.mark.parametrize("mode", modes)
+def test_write_str_with_bzip2_compression(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = "Hello World"
+    file.write_text(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, arcname=file.resolve())
+    with ArchiveFile(archive_file, mode=mode, compression_level=0, compression_type=CompressionType.BZIP2) as archive:
+        assert archive.compression_level == 1
+        archive.write(file)
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.resolve()).strip() == text
-
-
-def test_write_tar_str(tmp_path: Path) -> None:
-    for extension in CommonExtensions.TAR:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file)
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.name).strip() == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_text(file.name).strip() == text
 
 
-def test_write_tar_bytes(tmp_path: Path) -> None:
-    for extension in CommonExtensions.TAR:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_zip_bytes(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = b"Hello World"
+    file.write_bytes(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file)
+    with ArchiveFile(archive_file, mode=mode) as archive:
+        archive.write(file)
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.name).strip() == text
-
-
-def test_write_zip_tar_by_arcname(tmp_path: Path) -> None:
-    for extension in CommonExtensions.TAR:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, arcname=file.resolve())
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.resolve()).strip() == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_bytes(file.name) == text
 
 
-def test_write_tar_bytes_by_arcname(tmp_path: Path) -> None:
-    for extension in CommonExtensions.TAR:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_bytes_with_compression(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = b"Hello World"
+    file.write_bytes(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, arcname=file.resolve())
+    with ArchiveFile(
+        archive_file, mode=mode, compression_level=1, compression_type=CompressionType.DEFLATED
+    ) as archive:
+        archive.write(file)
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.resolve()).strip() == text
-
-
-def test_write_7z_str(tmp_path: Path) -> None:
-    for extension in CommonExtensions.SEVENZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file)
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.name).strip() == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_bytes(file.name) == text
 
 
-def test_write_7z_bytes(tmp_path: Path) -> None:
-    for extension in CommonExtensions.SEVENZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
+@pytest.mark.parametrize("extension", ("zip", "cbz"))
+@pytest.mark.parametrize("mode", modes)
+def test_write_bytes_with_bzip2_compression(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = b"Hello World"
+    file.write_bytes(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file)
+    with ArchiveFile(
+        archive_file, mode=mode, compression_level=0, compression_type=CompressionType.DEFLATED
+    ) as archive:
+        assert archive.compression_level == 0
+        archive.write(file)
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.name).strip() == text
-
-
-def test_write_7z_tar_by_arcname(tmp_path: Path) -> None:
-    for extension in CommonExtensions.SEVENZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = "Hello World"
-            file.write_text(text)
-
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, arcname=file.resolve())
-
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_text(file.resolve()).strip() == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_bytes(file.name) == text
 
 
-def test_write_7z_bytes_by_arcname(tmp_path: Path) -> None:
-    for extension in CommonExtensions.SEVENZIP:
-        for mode in modes:
-            archive_file = tmp_path / f"{uuid4().hex[:10]}{extension}"
-            file = tmp_path / "README.md"
-            file.touch()
-            text = b"Hello World"
-            file.write_bytes(text)
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_str_by_arcname(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = "Hello World"
+    file.write_text(text)
 
-            with ArchiveFile(archive_file, mode=mode) as archive:  # type: ignore
-                archive.write(file, arcname=file.resolve())
+    with ArchiveFile(archive_file, mode=mode) as archive:
+        archive.write(file, arcname=file.resolve())
 
-            with ArchiveFile(archive_file) as archive:
-                assert archive.read_bytes(file.resolve()).strip() == text
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_text(file.resolve()).strip() == text
+
+
+@pytest.mark.parametrize("extension", extensions)
+@pytest.mark.parametrize("mode", modes)
+def test_write_zip_bytes_by_arcname(tmp_path: Path, mode: str, extension: str) -> None:
+    archive_file = tmp_path / f"{uuid4()}.{extension}"
+    file = tmp_path / "README.md"
+    file.touch()
+    text = b"Hello World"
+    file.write_bytes(text)
+
+    with ArchiveFile(archive_file, mode=mode) as archive:
+        archive.write(file, arcname=file.resolve())
+
+    with ArchiveFile(archive_file) as archive:
+        assert archive.read_bytes(file.resolve()).strip() == text
