@@ -70,13 +70,9 @@ class ArchiveFile(BaseArchiveAdapter):
         password : str, optional
             Password for encrypted archive files.
         compression_type : CompressionType, optional
-            The compression method to be used for writing zip files.
-            Has no effect on reading zip files.
-            Has no offect on archives other than zip files.
+            The compression method for writing zip files.
         compression_level : CompressionLevel, optional
-            The compression level to be used for writing zip files.
-            Has no effect on reading zip files.
-            Has no offect on archives other than zip files.
+            The compression level for writing zip files.
         kwargs : Any
             Keyword arugments to pass to the underlying library.
 
@@ -88,6 +84,11 @@ class ArchiveFile(BaseArchiveAdapter):
         ------
         NotImplementedError
             Raised when the archive format is unsupported
+
+        Notes
+        -----
+        The `compression_type` and `compression_level` parameters are only applicable when creating 
+        ZIP files and do not affect reading ZIP files or other archive formats.
 
         References
         ----------
