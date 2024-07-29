@@ -189,7 +189,14 @@ class RarFileAdapter(BaseArchiveAdapter):
         destination.mkdir(parents=True, exist_ok=True)
 
         name = get_member_name(member)
-        self._rarfile.extract(member=name, path=destination, pwd=self._password)
+
+        try:
+            # ZipFile and TarFile raise KeyError but RarFile raises it's own NoRarEntry
+            # So for consistency's sake, we'll also raise KeyError here
+            self._rarfile.extract(member=name, path=destination, pwd=self._password)
+        except NoRarEntry:
+            raise KeyError(f"{name} not found in {self._file}")
+        
         return destination / name
 
     def extractall(

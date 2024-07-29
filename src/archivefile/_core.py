@@ -9,7 +9,7 @@ from zipfile import is_zipfile
 
 from py7zr import is_7zfile
 from pydantic import validate_call
-from rarfile import is_rarfile
+from rarfile import is_rarfile, is_rarfile_sfx
 from typing_extensions import Generator, Self
 
 from archivefile._adapters._base import BaseArchiveAdapter
@@ -69,22 +69,24 @@ class ArchiveFile(BaseArchiveAdapter):
         password : str, optional
             Password for encrypted archive files.
         compression_type : CompressionType, optional
-            The compression method to be used. If `None`, the default compression
-            method of the archive will be used.
+            The compression method to be used for writing zip files.
+            Has no effect on reading zip files.
+            Has no offect on archives other than zip files.
         compression_level : CompressionLevel, optional
-            The compression level to be used. If `None`, the default compression
-            level of the archive will be used.
+            The compression level to be used for writing zip files.
+            Has no effect on reading zip files.
+            Has no offect on archives other than zip files.
         kwargs : Any
             Keyword arugments to pass to the underlying library.
-
-        Notes
-        -----
-        Both the `compression_type` and `compression_level` parameters
-        only apply to zip files and have no effect on other archive formats.
 
         Returns
         -------
         None
+
+        Raises
+        ------
+        NotImplementedError
+            Raised when the archive format is unsupported
 
         References
         ----------
@@ -130,7 +132,7 @@ class ArchiveFile(BaseArchiveAdapter):
         elif is_7zfile(self._file):
             adapter = SevenZipFileAdapter  # type: ignore
 
-        elif is_rarfile(self._file):
+        elif is_rarfile(self._file) or is_rarfile_sfx(self._file):
             adapter = RarFileAdapter  # type: ignore
 
         else:
@@ -175,7 +177,7 @@ class ArchiveFile(BaseArchiveAdapter):
 
     @property
     def compression_level(self) -> CompressionLevel | None:
-        """Compression type used for writing."""
+        """Compression level used for writing."""
         return self._adapter.compression_level  # type: ignore
 
     @property
@@ -220,7 +222,7 @@ class ArchiveFile(BaseArchiveAdapter):
         """
         Retrieve all members of the archive as a tuple of ArchiveMember objects.
 
-        Returns
+        Yields
         -------
         Generator[ArchiveMember]
             Members of the archive as a generator of ArchiveMember objects.
@@ -392,6 +394,11 @@ class ArchiveFile(BaseArchiveAdapter):
         -------
         Path
             The path to the extracted file.
+
+        Raises
+        ------
+        KeyError
+            Member was not found in the archive.
 
         Examples
         --------

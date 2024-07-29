@@ -213,7 +213,12 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         # i.e, `spam/eggs/` in a ZipFile is equivalent to `spam/eggs` in SevenZipFile
         name = get_member_name(member).removesuffix("/")
 
-        self._sevenzipfile.extract(path=destination, targets=[name], recursive=True)
+        if name in self.get_names():
+            self._sevenzipfile.extract(path=destination, targets=[name], recursive=True)
+        else:
+            # ZipFile and TarFile raise KeyError but SevenZipFile does nothing
+            # So for consistency's sake, we'll also raise KeyError here
+            raise KeyError(f"{name} not found in {self._file}")
 
         self._sevenzipfile.reset()
         return destination / name

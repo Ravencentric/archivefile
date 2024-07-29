@@ -9,20 +9,24 @@ from archivefile._adapters._sevenzip import SevenZipFileAdapter
 from archivefile._adapters._tar import TarFileAdapter
 from archivefile._adapters._zip import ZipFileAdapter
 
-files = (
-    Path("tests/test_data/source_GNU.tar"),
-    Path("tests/test_data/source_STORE.7z"),
-    Path("tests/test_data/source_STORE.rar"),
-    Path("tests/test_data/source_STORE.zip"),
+
+@pytest.mark.parametrize(
+    "file,compression_type,compression_level,adapter",
+    [
+        (Path("tests/test_data/source_GNU.tar"), None, None, "TarFileAdapter"),
+        (Path("tests/test_data/source_STORE.7z"), None, None, "SevenZipFileAdapter"),
+        (Path("tests/test_data/source_STORE.rar"), None, None, "RarFileAdapter"),
+        (Path("tests/test_data/source_STORE.zip"), CompressionType.STORED, None, "ZipFileAdapter"),
+    ],
 )
-
-
-@pytest.mark.parametrize("file", files)
-def test_core_properties(file: Path) -> None:
+def test_core_properties(file: Path, compression_type: CompressionType | None, compression_level: int | None, adapter: str) -> None:
     with ArchiveFile(file) as archive:
         assert archive.file == file.resolve()
         assert archive.mode == "r"
         assert archive.password is None
+        assert archive.compression_type == compression_type
+        assert archive.compression_level == compression_level
+        assert archive.adapter == adapter
 
 
 def test_rar_handler_properties() -> None:

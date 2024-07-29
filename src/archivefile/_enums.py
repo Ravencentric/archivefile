@@ -28,7 +28,7 @@ class CompressionType(IntEnum):
     @classmethod
     def get(
         cls,
-        key: str | int | CompressionType | None = None,
+        key: str | int | None = None,
         default: Literal["stored", "deflated", "bzip2", "lzma"] = "stored",
     ) -> CompressionType:
         """
@@ -37,7 +37,7 @@ class CompressionType(IntEnum):
 
         Parameters
         ----------
-        key : str | int | CompressionType, optional
+        key : str | int, optional
             They key to retrieve.
 
         Returns
