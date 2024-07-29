@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - docs/**/*.*
+      - src/**/*.*
       - .github/workflows/docs.yml
       - mkdocs.yml
   workflow_dispatch:
