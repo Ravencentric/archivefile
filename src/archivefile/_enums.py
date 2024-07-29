@@ -43,6 +43,7 @@ class CompressionType(IntEnum):
         Returns
         -------
         CompressionType
+            The `CompressionType` corresponding to the key.
         """
         try:
             match key:
