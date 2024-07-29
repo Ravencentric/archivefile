@@ -47,6 +47,7 @@ class ArchiveFile(BaseArchiveAdapter):
     def __init__(self, file: StrPath, mode: str = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: int | None = None, **kwargs: Any) -> None: ...
     # fmt: on
 
+    @validate_call
     def __init__(
         self,
         file: StrPath,
@@ -439,6 +440,11 @@ class ArchiveFile(BaseArchiveAdapter):
         Path
             The path to the destination directory.
 
+        Raises
+        ------
+        KeyError
+            Raised if any member in members was not found in the archive.
+
         Examples
         --------
         ```py
@@ -511,7 +517,6 @@ class ArchiveFile(BaseArchiveAdapter):
             Name of the member or an ArchiveMember object.
         encoding : str, optional
             Encoding used to read the file. Default is `utf-8`.
-            Setting it to `None` will use platform-dependent encoding.
         errors : ErrorHandler, optional
             String that specifies how encoding and decoding errors are to be handled.
 
@@ -627,7 +632,6 @@ class ArchiveFile(BaseArchiveAdapter):
             # 'spam and eggs'
         ```
         """
-
         self._adapter.write_text(data, arcname=arcname)
 
     @validate_call
@@ -666,7 +670,6 @@ class ArchiveFile(BaseArchiveAdapter):
             # b"010010100101"
         ```
         """
-
         self._adapter.write_bytes(data, arcname=arcname)
 
     @validate_call

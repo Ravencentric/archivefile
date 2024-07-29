@@ -205,15 +205,17 @@ class RarFileAdapter(BaseArchiveAdapter):
         destination = realpath(destination)
         destination.mkdir(parents=True, exist_ok=True)
 
-        names: list[str] = []
+        names: set[str] = set()
         if members:
+            all_members = self._rarfile.namelist()
             for member in members:
-                names.append(get_member_name(member))
-            self._rarfile.extractall(path=destination, members=names, pwd=self._password)
+                name = get_member_name(member)
+                if name in all_members:
+                    names.add(name)
+                else:
+                    raise KeyError(f"{name} not found in {self._file}")
 
-        else:
-            self._rarfile.extractall(path=destination, pwd=self._password)
-
+        self._rarfile.extractall(path=destination, members=names, pwd=self._password)
         return destination
 
     def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:

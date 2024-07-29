@@ -229,12 +229,17 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         destination = realpath(destination)
         destination.mkdir(parents=True, exist_ok=True)
 
-        names: list[str] = []
+        names: set[str] = set()
         if members:
+            all_members = self._sevenzipfile.getnames()
             for member in members:
                 # Unlike the rest, SevenZip member directories do not end with `/`, so we need to strip it out
                 # i.e, `spam/eggs/` in a ZipFile is equivalent to `spam/eggs` in SevenZipFile
-                names.append(get_member_name(member).removesuffix("/"))
+                name = get_member_name(member).removesuffix("/")
+                if name in all_members:
+                    names.add(name)
+                else:
+                    raise KeyError(f"{name} not found in {self._file}")
 
         if names:
             self._sevenzipfile.extract(path=destination, targets=names, recursive=True)

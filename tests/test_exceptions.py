@@ -119,6 +119,13 @@ def test_missing_member_in_extract(file: Path) -> None:
             archive.extract("non-existent.member")
 
 
+@pytest.mark.parametrize("file", files)
+def test_missing_member_in_extractall(file: Path, tmp_path: Path) -> None:
+    with pytest.raises(KeyError):
+        with ArchiveFile(file) as archive:
+            archive.extractall(destination=tmp_path, members=["non-existent.member"])
+
+
 @pytest.mark.parametrize("extension", extensions)
 @pytest.mark.parametrize("mode", modes)
 def test_write_not_a_file(tmp_path: Path, mode: str, extension: str) -> None:
