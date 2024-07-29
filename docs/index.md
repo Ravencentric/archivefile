@@ -78,7 +78,7 @@ with ArchiveFile("../source.zip") as archive:
     archive.extract("pyproject.toml", destination="./dest/") # Extract a single member by it's name
     archive.extractall(destination="./dest/") # Extract all members
     archive.get_member("pyproject.toml")  # Get the ArchiveMember object for the member by it's name
-    archive.get_members()  # Retrieve all members from the archive as a tuple of ArchiveMember objects
+    archive.get_members()  # Retrieve all members from the archive as a generator of ArchiveMember objects
     archive.get_names()  # Retrieve names of all members in the archive as a tuple of strings
     archive.read_bytes("pyproject.toml") # Read the contents of the member as bytes
     archive.read_text("pyproject.toml")  # Read the contents of the member as text
