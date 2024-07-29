@@ -83,7 +83,6 @@ nav:
   - API Reference:
       - ArchiveFile: api-reference/archivefile.md
       - Models: api-reference/models.md
-      - Utils: api-reference/utils.md
       - Enums: api-reference/enums.md
+      - Utils: api-reference/utils.md
       - Types: api-reference/types.md
-      - Exceptions: api-reference/exceptions.md
