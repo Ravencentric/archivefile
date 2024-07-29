@@ -38,7 +38,7 @@ class CompressionType(IntEnum):
         Parameters
         ----------
         key : str | int, optional
-            They key to retrieve.
+            The key to retrieve.
 
         Returns
         -------
