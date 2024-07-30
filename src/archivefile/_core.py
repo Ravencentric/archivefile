@@ -66,7 +66,7 @@ class ArchiveFile(BaseArchiveAdapter):
         file : StrPath
             Path to the archive file.
         mode : OpenArchiveMode, optional
-            Specifies the mode for opening the archive file.
+            Mode for opening the archive file.
         password : str, optional
             Password for encrypted archive files.
         compression_type : CompressionType, optional
