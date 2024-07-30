@@ -83,12 +83,12 @@ class ArchiveFile(BaseArchiveAdapter):
         Raises
         ------
         NotImplementedError
-            Raised when the archive format is unsupported
+            Raised if the archive format is unsupported
 
         Notes
         -----
-        The `compression_type` and `compression_level` parameters are only applicable when creating 
-        ZIP files and do not affect reading ZIP files or other archive formats.
+        The `compression_type` and `compression_level` parameters are only applicable when creating
+        zip files and do not affect reading zip files or other archive formats.
 
         References
         ----------
@@ -205,7 +205,7 @@ class ArchiveFile(BaseArchiveAdapter):
         Raises
         ------
         KeyError
-            Member was not found in the archive.
+            Raised if the member is not found in the archive.
 
         Examples
         --------
@@ -400,7 +400,7 @@ class ArchiveFile(BaseArchiveAdapter):
         Raises
         ------
         KeyError
-            Member was not found in the archive.
+            Raised if the member is not found in the archive.
 
         Examples
         --------
@@ -486,7 +486,7 @@ class ArchiveFile(BaseArchiveAdapter):
         Raises
         ------
         KeyError
-            Member was not found in the archive.
+            Raised if the member is not found in the archive.
 
         Examples
         --------
@@ -529,7 +529,7 @@ class ArchiveFile(BaseArchiveAdapter):
         Raises
         ------
         KeyError
-            Member was not found in the archive.
+            Raised if the member is not found in the archive.
 
         References
         ----------
