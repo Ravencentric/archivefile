@@ -35,15 +35,18 @@ files = (
     Path("tests/test_data/source_STORE.zip"),
 )
 
+# Alias the pre-configured parametrize function for reusability
+parametrize_files = pytest.mark.parametrize("file", files, ids=lambda x: x.name)
 
-@pytest.mark.parametrize("file", files)
+
+@parametrize_files
 def test_extract(file: Path, tmp_path: Path) -> None:
     with ArchiveFile(file) as archive:
         member = archive.extract("pyanilist-main/README.md", destination=tmp_path)
         assert member.is_file()
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_extract_without_context_manager(file: Path, tmp_path: Path) -> None:
     archive = ArchiveFile(file)
     extracted_file = archive.extract("pyanilist-main/README.md", destination=tmp_path)
@@ -51,7 +54,7 @@ def test_extract_without_context_manager(file: Path, tmp_path: Path) -> None:
     assert extracted_file.is_file()
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_extract_by_member(file: Path, tmp_path: Path) -> None:
     with ArchiveFile(file) as archive:
         member = [member for member in archive.get_members() if member.is_file][0]
@@ -59,7 +62,7 @@ def test_extract_by_member(file: Path, tmp_path: Path) -> None:
         assert outfile.is_file()
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_extractall(file: Path, tmp_path: Path) -> None:
     with ZipFile("tests/test_data/source_STORE.zip") as archive:
         dest = tmp_path / uuid4().hex
@@ -73,7 +76,7 @@ def test_extractall(file: Path, tmp_path: Path) -> None:
         assert control == members
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_extractall_by_members(file: Path, tmp_path: Path) -> None:
     expected = [
         "pyanilist-main/.gitignore",

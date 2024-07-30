@@ -50,6 +50,9 @@ files = (
     Path("tests/test_data/source_STORE.zip"),
 )
 
+# Alias the pre-configured parametrize function for reusability
+parametrize_files = pytest.mark.parametrize("file", files, ids=lambda x: x.name)
+
 
 def test_write_rar() -> None:
     with pytest.raises(NotImplementedError):
@@ -91,35 +94,35 @@ def test_existing_unsupported_archive(tmp_path: Path) -> None:
             archive.write_text("abc1234", arcname="a.txt")
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_missing_member(file: Path) -> None:
     with pytest.raises(KeyError):
         with ArchiveFile(file) as archive:
             archive.get_member("non-existent.member")
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_missing_member_in_read_bytes(file: Path) -> None:
     with pytest.raises(KeyError):
         with ArchiveFile(file) as archive:
             archive.read_bytes("non-existent.member")
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_missing_member_in_read_text(file: Path) -> None:
     with pytest.raises(KeyError):
         with ArchiveFile(file) as archive:
             archive.read_text("non-existent.member")
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_missing_member_in_extract(file: Path) -> None:
     with pytest.raises(KeyError):
         with ArchiveFile(file) as archive:
             archive.extract("non-existent.member")
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_missing_member_in_extractall(file: Path, tmp_path: Path) -> None:
     with pytest.raises(KeyError):
         with ArchiveFile(file) as archive:

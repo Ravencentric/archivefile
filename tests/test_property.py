@@ -18,6 +18,7 @@ from archivefile._adapters._zip import ZipFileAdapter
         (Path("tests/test_data/source_STORE.rar"), None, None, "RarFileAdapter"),
         (Path("tests/test_data/source_STORE.zip"), CompressionType.STORED, None, "ZipFileAdapter"),
     ],
+    ids=lambda x: x.name if isinstance(x, Path) else x,  # https://github.com/pytest-dev/pytest/issues/8283
 )
 def test_core_properties(
     file: Path, compression_type: CompressionType | None, compression_level: int | None, adapter: str

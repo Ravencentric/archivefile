@@ -26,6 +26,7 @@ class BaseArchiveAdapter(Protocol):
     A base protocol that can be inherited from to implement more adapters.
     Refer to `src/archivefile/_core.py` for documentation of every method and property.
     """
+
     # fmt: off
     @overload
     def __init__(self, file: StrPath, mode: OpenArchiveMode = "r", *, password: str | None = None, compression_type: CompressionType | None = None, compression_level: CompressionLevel | None = None, **kwargs: Any) -> None: ...

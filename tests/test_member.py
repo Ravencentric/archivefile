@@ -33,14 +33,17 @@ files = (
     Path("tests/test_data/source_STORE.zip"),
 )
 
+# Alias the pre-configured parametrize function for reusability
+parametrize_files = pytest.mark.parametrize("file", files, ids=lambda x: x.name)
 
-@pytest.mark.parametrize("file", files)
+
+@parametrize_files
 def test_get_members(file: Path) -> None:
     with ArchiveFile(file) as archive:
         assert len(tuple(archive.get_members())) == 53
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_get_members_without_context_manager(file: Path) -> None:
     archive = ArchiveFile(file)
     total_members = len(tuple(archive.get_members()))
@@ -48,13 +51,13 @@ def test_get_members_without_context_manager(file: Path) -> None:
     assert total_members == 53
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_get_names(file: Path) -> None:
     with ArchiveFile(file) as archive:
         assert len(archive.get_names()) == 53
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_get_names_without_context_manager(file: Path) -> None:
     archive = ArchiveFile(file)
     total_members = len(archive.get_names())
@@ -62,14 +65,14 @@ def test_get_names_without_context_manager(file: Path) -> None:
     assert total_members == 53
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_member_and_names(file: Path) -> None:
     with ArchiveFile(file) as archive:
         names = tuple([member.name for member in archive.get_members()])
         assert archive.get_names() == names
 
 
-@pytest.mark.parametrize("file", files)
+@parametrize_files
 def test_members_and_names_without_context_manager(file: Path) -> None:
     archive = ArchiveFile(file)
     names = tuple([member.name for member in archive.get_members()])
