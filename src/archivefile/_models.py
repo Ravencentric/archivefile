@@ -9,7 +9,10 @@ from archivefile._types import UTCDateTime
 
 
 class ArchiveMember(BaseModel):
-    """Represents a member of an archive file"""
+    """
+    Represents a member of an archive file.
+    This is immutable, hashable, and supports equality checking.
+    """
 
     model_config = ConfigDict(frozen=True)
 
@@ -40,3 +43,10 @@ class ArchiveMember(BaseModel):
         if v is None:
             return cls.model_fields[info.field_name].default  # type: ignore
         return v
+
+    def __str__(self) -> str:
+        """
+        Simple string representation.
+        This is equivalent to `ArchiveMember.name`
+        """
+        return self.name
