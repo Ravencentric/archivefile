@@ -180,7 +180,7 @@ class ArchiveFile(BaseArchiveAdapter):
     @property
     def compression_level(self) -> CompressionLevel | None:
         """Compression level used for writing."""
-        return self._adapter.compression_level  # type: ignore
+        return self._adapter.compression_level
 
     @property
     def adapter(self) -> str:

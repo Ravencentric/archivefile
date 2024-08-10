@@ -227,7 +227,7 @@ class RarFileAdapter(BaseArchiveAdapter):
         try:
             # ZipFile and TarFile raise KeyError but RarFile raises it's own NoRarEntry
             # So for consistency's sake, we'll also raise KeyError here
-            return self._rarfile.read(name, pwd=self._password)
+            return self._rarfile.read(name, pwd=self._password)  # type: ignore
         except NoRarEntry:
             raise KeyError(f"{name} not found in {self._file}")
 

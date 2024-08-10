@@ -31,7 +31,7 @@ ARCHIVE_DIR = Path("src/archivefile").resolve()
 @pytest.mark.parametrize("mode", modes)
 def test_writeall(tmp_path: Path, mode: str, extension: str) -> None:
     dir = tmp_path / f"{uuid4()}.{extension}"
-    with ArchiveFile(dir, mode) as archive:  # type: ignore
+    with ArchiveFile(dir, mode) as archive:
         archive.writeall(ARCHIVE_DIR, glob="*.py")
 
     with ArchiveFile(dir, "r") as archive:
@@ -46,7 +46,7 @@ def test_writeall(tmp_path: Path, mode: str, extension: str) -> None:
 @pytest.mark.parametrize("mode", modes)
 def test_writeall_with_root(tmp_path: Path, mode: str, extension: str) -> None:
     dir = tmp_path / f"{uuid4()}.{extension}"
-    with ArchiveFile(dir, mode) as archive:  # type: ignore
+    with ArchiveFile(dir, mode) as archive:
         archive.writeall(ARCHIVE_DIR, glob="*.py", root=ARCHIVE_DIR.parent.parent)
 
     with ArchiveFile(dir, "r") as archive:

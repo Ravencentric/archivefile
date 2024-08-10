@@ -257,15 +257,19 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         if name not in self._sevenzipfile.getnames():
             raise KeyError(f"{name} not found in {self._file}")
 
-        datadict = self._sevenzipfile.read(targets=[name])
-
-        if fileobj := datadict.get(name):
-            data = fileobj.read()
-        else:
-            data = b""
-
+        data = self._sevenzipfile.read(targets=[name])
         self._sevenzipfile.reset()
-        return data
+
+        match data:
+            case None:
+                return b""
+            case dict():
+                if fileobj := data.get(name):
+                    return fileobj.read()  # type: ignore
+                else:
+                    return b""
+            case _:
+                return b""
 
     def read_text(
         self,
