@@ -43,8 +43,8 @@ rich = ["rich"]
 all = ["bigtree", "rich"]
 
 [tool.poetry.group.dev.dependencies]
-mypy = "^1.11.0"
-ruff = "^0.5.5"
+mypy = "^1.11.1"
+ruff = "^0.5.7"
 pytest = "^8.3.2"
 coverage = "^7.6.0"
 pre-commit = "^3.8.0"
@@ -61,6 +61,9 @@ target-version = "py310"
 [tool.ruff.lint]
 extend-select = ["I"]
 fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+required-imports = ["from __future__ import annotations"]
 
 [tool.mypy]
 strict = true
@@ -83,8 +86,8 @@ omit = [
 exclude_also = [
     "if TYPE_CHECKING:",         # Only used for type-hints
     "raise NotImplementedError", # Can't test what's not implemented
-    "def print_table",           # Function pretty much calls another third party function
-    "def print_tree",            # Function pretty much calls another third party function
+    "def print_table",           # Function that pretty much calls another third party function
+    "def print_tree",            # Function that pretty much calls another third party function
     "def __repr__",              # For debugging
 ]
 
