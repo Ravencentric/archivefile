@@ -110,7 +110,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
 
         return ArchiveMember(
             name=zipinfo.filename,
-            size=zipinfo.file_size,
+            size=zipinfo.file_size, # type: ignore
             compressed_size=zipinfo.compress_size,
             datetime=datetime(*zipinfo.date_time),
             checksum=zipinfo.CRC,
