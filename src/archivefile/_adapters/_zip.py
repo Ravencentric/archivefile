@@ -66,7 +66,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
 
         self._zipfile = ZipFile(
             self._file,
-            mode=self._mode,
+            mode=self._mode, # type: ignore
             compression=self._compression_type,
             compresslevel=self._compression_level,
             **kwargs,
