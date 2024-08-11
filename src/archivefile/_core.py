@@ -188,13 +188,13 @@ class ArchiveFile(BaseArchiveAdapter):
         return self._adapter.adapter
 
     @validate_call
-    def get_member(self, member: StrPath) -> ArchiveMember:
+    def get_member(self, member: StrPath | ArchiveMember) -> ArchiveMember:
         """
         Retrieve an ArchiveMember object by it's name.
 
         Parameters
         ----------
-        member : StrPath
+        member : StrPath | ArchiveMember
             Name of the member.
 
         Returns
@@ -386,7 +386,7 @@ class ArchiveFile(BaseArchiveAdapter):
 
         Parameters
         ----------
-        member : StrPath, ArchiveMember
+        member : StrPath | ArchiveMember
             Name of the member or an ArchiveMember object.
         destination : StrPath
             The path to the directory where the member will be extracted.
@@ -475,7 +475,7 @@ class ArchiveFile(BaseArchiveAdapter):
 
         Parameters
         ----------
-        member : StrPath, ArchiveMember
+        member : StrPath | ArchiveMember
             Name of the member or an ArchiveMember object.
 
         Returns
@@ -514,7 +514,7 @@ class ArchiveFile(BaseArchiveAdapter):
 
         Parameters
         ----------
-        member : StrPath, ArchiveMember
+        member : StrPath | ArchiveMember
             Name of the member or an ArchiveMember object.
         encoding : str, optional
             Encoding used to read the file. Default is `utf-8`.

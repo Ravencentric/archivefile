@@ -95,7 +95,7 @@ class RarFileAdapter(BaseArchiveAdapter):
     def adapter(self) -> str:
         return self.__class__.__name__
 
-    def get_member(self, member: StrPath) -> ArchiveMember:
+    def get_member(self, member: StrPath | ArchiveMember) -> ArchiveMember:
         name = get_member_name(member)
 
         try:

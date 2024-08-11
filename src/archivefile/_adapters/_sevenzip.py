@@ -109,7 +109,7 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
     def adapter(self) -> str:
         return self.__class__.__name__
 
-    def get_member(self, member: StrPath) -> ArchiveMember:
+    def get_member(self, member: StrPath | ArchiveMember) -> ArchiveMember:
         # Unlike the rest, SevenZip member directories do not end with `/`, so we need to strip it out
         # i.e, `spam/eggs/` in a ZipFile is equivalent to `spam/eggs` in SevenZipFile
         name = get_member_name(member).removesuffix("/")
