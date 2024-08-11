@@ -261,14 +261,16 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         self._sevenzipfile.reset()
 
         match data:
-            case None:
-                return b""
             case dict():
                 if fileobj := data.get(name):
                     return fileobj.read()  # type: ignore
                 else:
                     return b""
-            case _:
+            case _: # pragma: no cover
+                # We need this because SevenZipFile.read is typed as `dict | None`
+                # but this case will never actually happen.
+                # I couldn't get SevenZipFile to return anything but a dict,
+                # so I'm assuming it's some edge case.
                 return b""
 
     def read_text(
