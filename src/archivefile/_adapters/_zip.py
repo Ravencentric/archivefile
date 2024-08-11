@@ -70,7 +70,7 @@ class ZipFileAdapter(BaseArchiveAdapter):
             compression=self._compression_type,
             compresslevel=self._compression_level,
             **kwargs,
-        )  # type: ignore
+        )
 
     def __enter__(self) -> Self:
         return self
