@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import Literal
+from typing import Literal, overload
 
 
 class CompressionType(IntEnum):
@@ -25,11 +25,23 @@ class CompressionType(IntEnum):
     This requires the [lzma](https://docs.python.org/3/library/lzma.html#module-lzma) module.
     """
 
+    @overload
     @classmethod
     def get(
         cls,
         key: str | int | None = None,
         default: Literal["stored", "deflated", "bzip2", "lzma"] = "stored",
+    ) -> CompressionType: ...
+
+    @overload
+    @classmethod
+    def get(cls, key: str | int | None = None, default: str | int = "stored") -> CompressionType: ...
+
+    @classmethod
+    def get(
+        cls,
+        key: str | int | None = None,
+        default: Literal["stored", "deflated", "bzip2", "lzma"] | str | int = "stored",
     ) -> CompressionType:
         """
         Get the `CompressionType` by its name or number.
@@ -39,6 +51,8 @@ class CompressionType(IntEnum):
         ----------
         key : str | int, optional
             The key to retrieve.
+        default : Literal["stored", "deflated", "bzip2", "lzma"] | str | int, optional
+            The default value to return if the key is missing or invalid.
 
         Returns
         -------
@@ -54,6 +68,6 @@ class CompressionType(IntEnum):
                     return cls(key)
 
                 case _:
-                    return cls[default.upper()]
+                    return cls[default.upper()] if isinstance(default, str) else cls(default)
         except (KeyError, ValueError):
-            return cls[default.upper()]
+            return cls[default.upper()] if isinstance(default, str) else cls(default)

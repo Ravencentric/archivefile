@@ -23,3 +23,8 @@ def test_compression_type_enum() -> None:
     assert CompressionType.get("non-existent-key") is CompressionType.STORED
     assert CompressionType.get(999999999999, "bzip2") is CompressionType.BZIP2
     assert CompressionType.get("non-existent-key", "lzma") is CompressionType.LZMA
+
+    assert CompressionType.get(999999999999) is CompressionType.STORED
+    assert CompressionType.get("non-existent-key") is CompressionType.STORED
+    assert CompressionType.get(999999999999, CompressionType.BZIP2) is CompressionType.BZIP2
+    assert CompressionType.get("non-existent-key", CompressionType.LZMA) is CompressionType.LZMA
