@@ -110,8 +110,8 @@ class TarFileAdapter(BaseArchiveAdapter):
         )
 
     def get_members(self) -> Generator[ArchiveMember]:
-        return (
-            ArchiveMember(
+        for tarinfo in self._tarfile.getmembers():
+            yield ArchiveMember(
                 name=tarinfo.name,
                 size=tarinfo.size,  # type: ignore
                 compressed_size=tarinfo.size,  # type: ignore
@@ -120,8 +120,6 @@ class TarFileAdapter(BaseArchiveAdapter):
                 is_dir=tarinfo.isdir(),
                 is_file=tarinfo.isfile(),
             )
-            for tarinfo in self._tarfile.getmembers()
-        )
 
     def get_names(self) -> tuple[str, ...]:
         return tuple(self._tarfile.getnames())

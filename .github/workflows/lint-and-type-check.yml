@@ -1,4 +1,4 @@
-name: Type Check
+name: Lint, Format, and Type Check
 
 on:
   push:
@@ -7,14 +7,14 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
-      - '.github/workflows/typecheck.yml'
+      - '.github/workflows/lint-and-type-check.yml'
   pull_request:
     branches:
       - main
     paths:
       - 'src/**'
       - 'tests/**'
-      - '.github/workflows/typecheck.yml'
+      - '.github/workflows/lint-and-type-check.yml'
   workflow_dispatch:
 
 defaults:
@@ -22,7 +22,7 @@ defaults:
     shell: bash
 
 jobs:
-  mypy:
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -55,3 +55,9 @@ jobs:
 
       - name: Run mypy
         run: poetry run mypy .
+
+      - name: Run ruff lint
+        run: poetry run ruff check .
+
+      - name: Run ruff format
+        run: poetry run ruff format --check .

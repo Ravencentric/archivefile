@@ -119,8 +119,8 @@ class ZipFileAdapter(BaseArchiveAdapter):
         )
 
     def get_members(self) -> Generator[ArchiveMember]:
-        return (
-            ArchiveMember(
+        for zipinfo in self._zipfile.filelist:
+            yield ArchiveMember(
                 name=zipinfo.filename,
                 size=zipinfo.file_size,
                 compressed_size=zipinfo.compress_size,
@@ -129,8 +129,6 @@ class ZipFileAdapter(BaseArchiveAdapter):
                 is_dir=zipinfo.is_dir(),
                 is_file=not zipinfo.is_dir(),
             )
-            for zipinfo in self._zipfile.filelist
-        )
 
     def get_names(self) -> tuple[str, ...]:
         return tuple(self._zipfile.namelist())

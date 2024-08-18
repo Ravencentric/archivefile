@@ -136,8 +136,8 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
         )
 
     def get_members(self) -> Generator[ArchiveMember]:
-        return (
-            ArchiveMember(
+        for sevenzipinfo in self._sevenzipfile.list():
+            yield ArchiveMember(
                 name=sevenzipinfo.filename,
                 size=sevenzipinfo.uncompressed,
                 # Sometimes sevenzip can return 0 for compressed size when there's no compression
@@ -148,8 +148,6 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
                 is_dir=sevenzipinfo.is_directory,
                 is_file=not sevenzipinfo.is_directory,
             )
-            for sevenzipinfo in self._sevenzipfile.list()
-        )
 
     def get_names(self) -> tuple[str, ...]:
         return tuple(self._sevenzipfile.getnames())
@@ -266,7 +264,7 @@ class SevenZipFileAdapter(BaseArchiveAdapter):
                     return fileobj.read()  # type: ignore
                 else:
                     return b""
-            case _: # pragma: no cover
+            case _:  # pragma: no cover
                 # We need this because SevenZipFile.read is typed as `dict | None`
                 # but this case will never actually happen.
                 # I couldn't get SevenZipFile to return anything but a dict,

@@ -117,8 +117,8 @@ class RarFileAdapter(BaseArchiveAdapter):
         )
 
     def get_members(self) -> Generator[ArchiveMember]:
-        return (
-            ArchiveMember(
+        for rarinfo in self._rarfile.infolist():
+            yield ArchiveMember(
                 name=rarinfo.filename,
                 size=rarinfo.file_size,
                 compressed_size=rarinfo.compress_size,
@@ -127,8 +127,6 @@ class RarFileAdapter(BaseArchiveAdapter):
                 is_dir=True if rarinfo.filename.endswith("/") else False,
                 is_file=False if rarinfo.filename.endswith("/") else True,
             )
-            for rarinfo in self._rarfile.infolist()
-        )
 
     def get_names(self) -> tuple[str, ...]:
         return tuple(self._rarfile.namelist())

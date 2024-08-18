@@ -241,7 +241,7 @@ class ArchiveFile(BaseArchiveAdapter):
                 # project/src
         ```
         """
-        return self._adapter.get_members()
+        yield from self._adapter.get_members()
 
     @validate_call
     def get_names(self) -> tuple[str, ...]:
