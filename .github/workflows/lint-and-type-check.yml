@@ -8,6 +8,8 @@ on:
       - 'src/**'
       - 'tests/**'
       - '.github/workflows/lint-and-type-check.yml'
+    tags-ignore:
+      - '*'
   pull_request:
     branches:
       - main
@@ -16,6 +18,14 @@ on:
       - 'tests/**'
       - '.github/workflows/lint-and-type-check.yml'
   workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_COLOR: 1
+  UV_LOCKED: 1
 
 defaults:
   run:
@@ -26,38 +36,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          python-version: "3.12"
+          persist-credentials: false
 
-      - name: Install pipx
-        run: python -m pip install pipx
-
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Setup a local virtual environment
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-
-      - uses: actions/cache@v4
-        name: Define a cache for the venv based on the dependencies lock file
+      - name: Install uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
         with:
-          key: ubuntu-latest-3.12-${{ hashFiles('poetry.lock') }}
-          path: ./.venv
-
-      - name: Install the project dependencies
-        run: poetry install --all-extras
+          enable-cache: false
+          python-version: "3.14"
 
       - name: Run mypy
-        run: poetry run mypy .
+        run: uv run mypy .
 
       - name: Run ruff lint
-        run: poetry run ruff check .
+        run: uv run ruff check .
 
       - name: Run ruff format
-        run: poetry run ruff format --check .
+        run: uv run ruff format --check .

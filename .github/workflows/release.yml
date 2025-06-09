@@ -3,49 +3,67 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  FORCE_COLOR: 1
+  UV_LOCKED: 1
 
 jobs:
+  tests:
+    name: Tests
+    uses: ./.github/workflows/tests.yml
+  lint:
+    name: Lint
+    uses: ./.github/workflows/lint-and-type-check.yml
   release:
+    needs: [tests, lint]
     name: Release
+    environment:
+      name: pypi
+      url: https://pypi.org/project/nzb
+    permissions:
+      id-token: write
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          persist-credentials: false
           fetch-depth: 0 # Important for changelog
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
         with:
-          python-version: '3.12'
+          enable-cache: false
+          python-version: "3.14"
 
-      - name: Install pipx
-        run: python -m pip install pipx
+      - name: Build
+        run: uv build
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
 
-      - name: Build project for distribution
-        run: poetry build
-
-      - name: Generate changelog with git-cliff
-        uses: tj-actions/git-cliff@v1
-        with:
-          args: --latest --strip all
-          template-config: .github/cliff-template.toml
-          output: "CHANGELOG.md"
+      - name: Generate a changelog
+        run: >-
+          uvx git-cliff --config .github/cliff-template.toml
+          --github-repo "${GH_REPO}"
+          --github-token "${GH_TOKEN}"
+          --latest --output "CHANGELOG.md"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
 
       - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "dist/*"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          bodyFile: "CHANGELOG.md"
-          draft: false
-          prerelease: false
-
-      - name: Publish to PyPI
+        run: gh release create "${GH_REF_NAME}" -F "CHANGELOG.md" --fail-on-no-commits
         env:
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
-        run: poetry publish
+          GH_TOKEN: ${{ github.token }}
+          GH_REF_NAME: ${{ github.ref_name }}

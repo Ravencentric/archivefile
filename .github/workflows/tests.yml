@@ -1,0 +1,65 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/tests.yml'
+    tags-ignore:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/tests.yml'
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  FORCE_COLOR: 1
+  UV_LOCKED: 1
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install the project
+        run: uv sync --all-extras
+
+      - name: Run tests and generate coverage
+        run: |
+          uv run coverage run -m pytest -vv
+          uv run coverage xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+        with:
+          env_vars: OS,PYTHON
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true

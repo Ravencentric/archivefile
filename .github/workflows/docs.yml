@@ -1,55 +1,51 @@
-name: Build docs
+name: Deploy docs
 
 on:
   push:
     branches:
       - main
     paths:
-      - docs/**/*.*
-      - src/**/*.*
-      - .github/workflows/docs.yml
-      - mkdocs.yml
+      - 'docs/**'
+      - 'src/**'
+      - '.github/workflows/docs.yml'
+      - 'mkdocs.yml'
   workflow_dispatch:
 
-permissions:
-  contents: write
+env:
+  FORCE_COLOR: 1
+  UV_LOCKED: 1
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  docs:
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure Git Credentials
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          python-version: '3.12'
+          persist-credentials: false
 
-      - name: Install pipx
-        run: python -m pip install pipx
-
-      - name: Install poetry
-        run: pipx install poetry
-
-      - name: Setup a local virtual environment
-        run: |
-          poetry config virtualenvs.create true --local
-          poetry config virtualenvs.in-project true --local
-
-      - uses: actions/cache@v4
-        name: Define a cache for the venv based on the dependencies lock file
+      - uses: astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb # v6.1.0
         with:
-          key: ubuntu-latest-${{ hashFiles('poetry.lock') }}
-          path: ./.venv
+          enable-cache: false
 
-      - name: Install dependencies
-        run: poetry install --all-extras
+      - run: uv run mkdocs build --strict
 
-      - name: Deploy docs
-        run: poetry run mkdocs gh-deploy --force
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+        with:
+          path: './site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

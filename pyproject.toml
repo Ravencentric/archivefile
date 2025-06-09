@@ -41,16 +41,20 @@ Repository = "https://github.com/Ravencentric/archivefile"
 Documentation = "https://archivefile.ravencentric.cc"
 
 [dependency-groups]
-dev = [
-    "mypy>=1.11.1,<2",
-    "ruff>=0.5.7,<0.6",
-    "pytest>=8.3.2,<9",
-    "coverage>=7.6.0,<8",
-]
 docs = [
-    "mkdocs-material>=9.5.30,<10",
-    "mkdocstrings[python]>=0.25.1,<0.26",
-    "mkdocs-autorefs>=1.0.1,<2",
+  "mkdocs-autorefs>=1.3.0",
+  "mkdocs-material>=9.5.50",
+  "mkdocstrings[python]>=0.27.0",
+]
+test = [
+  "coverage[toml]>=7.6.10",
+  "pytest>=8.3.4",
+]
+lint = ["mypy>=1.16.0", "ruff>=0.11.12", { include-group = "test" }]
+dev = [
+  { include-group = "docs" },
+  { include-group = "test" },
+  { include-group = "lint" },
 ]
 
 [tool.ruff]
