@@ -1,11 +1,11 @@
-[tool.poetry]
+[project]
 name = "archivefile"
 version = "1.0.0"
 description = "Unified interface for tar, zip, sevenzip, and rar files"
-authors = ["Ravencentric <me@ravencentric.cc>"]
+authors = [{ name = "Ravencentric", email = "me@ravencentric.cc" }]
+requires-python = ">=3.10"
 readme = "README.md"
 license = "Unlicense"
-packages = [{ include = "archivefile", from = "src" }]
 keywords = [
     "archive",
     "archivefile",
@@ -14,9 +14,6 @@ keywords = [
     "sevenzip",
     "rarfile",
 ]
-homepage = "https://archivefile.ravencentric.cc"
-repository = "https://github.com/Ravencentric/archivefile"
-documentation = "https://archivefile.ravencentric.cc"
 classifiers = [
     "License :: OSI Approved :: The Unlicense (Unlicense)",
     "Operating System :: OS Independent",
@@ -27,35 +24,37 @@ classifiers = [
     "Topic :: System :: Archiving :: Compression",
     "Typing :: Typed",
 ]
+dependencies = [
+    "rarfile>=4.2",
+    "py7zr>=0.21.1",
+    "pydantic>=2.8.2",
+    "typing-extensions>=4.12.2",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.10"
-rarfile = ">=4.2"
-py7zr = ">=0.21.1"
-pydantic = ">=2.8.2"
-typing-extensions = ">=4.12.2"
-rich = { version = ">=13.7.1", optional = true }
-bigtree = { version = ">=0.19.3", optional = true }
+[project.optional-dependencies]
+bigtree = ["bigtree>=0.19.3"]
+rich = ["rich>=13.7.1"]
+all = ["bigtree>=0.19.3", "rich>=13.7.1"]
 
-[tool.poetry.extras]
-bigtree = ["bigtree"]
-rich = ["rich"]
-all = ["bigtree", "rich"]
+[project.urls]
+Repository = "https://github.com/Ravencentric/archivefile"
+Documentation = "https://archivefile.ravencentric.cc"
 
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.11.1"
-ruff = "^0.5.7"
-pytest = "^8.3.2"
-coverage = "^7.6.0"
-
-[tool.poetry.group.docs.dependencies]
-mkdocs-material = "^9.5.30"
-mkdocstrings = { extras = ["python"], version = "^0.25.1" }
-mkdocs-autorefs = "^1.0.1"
+[dependency-groups]
+dev = [
+    "mypy>=1.11.1,<2",
+    "ruff>=0.5.7,<0.6",
+    "pytest>=8.3.2,<9",
+    "coverage>=7.6.0,<8",
+]
+docs = [
+    "mkdocs-material>=9.5.30,<10",
+    "mkdocstrings[python]>=0.25.1,<0.26",
+    "mkdocs-autorefs>=1.0.1,<2",
+]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
 
 [tool.ruff.lint]
 extend-select = ["I"]
@@ -76,10 +75,7 @@ ignore_missing_imports = true
 filterwarnings = ["ignore::DeprecationWarning:tarfile"]
 
 [tool.coverage.run]
-omit = [
-    "src/archivefile/_version.py",
-    "tests/*",
-]
+omit = ["src/archivefile/_version.py", "tests/*"]
 
 [tool.coverage.report]
 exclude_also = [
@@ -90,6 +86,7 @@ exclude_also = [
     "def __repr__",              # For debugging
 ]
 
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
