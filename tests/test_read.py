@@ -1,37 +1,13 @@
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
-from archivefile import ArchiveFile
 
-files = (
-    Path("tests/test_data/source_BEST.rar"),
-    Path("tests/test_data/source_BZIP2.7z"),
-    Path("tests/test_data/source_BZIP2.zip"),
-    Path("tests/test_data/source_DEFLATE.zip"),
-    # Path("tests/test_data/source_DEFLATE64.zip"), # Deflate64 is not supported by ZipFile
-    Path("tests/test_data/source_GNU.tar"),
-    Path("tests/test_data/source_GNU.tar.bz2"),
-    Path("tests/test_data/source_GNU.tar.gz"),
-    Path("tests/test_data/source_GNU.tar.xz"),
-    Path("tests/test_data/source_LZMA.7z"),
-    Path("tests/test_data/source_LZMA.zip"),
-    Path("tests/test_data/source_LZMA2.7z"),
-    Path("tests/test_data/source_POSIX.tar"),
-    Path("tests/test_data/source_POSIX.tar.bz2"),
-    Path("tests/test_data/source_POSIX.tar.gz"),
-    Path("tests/test_data/source_POSIX.tar.xz"),
-    Path("tests/test_data/source_PPMD.7z"),
-    # Path("tests/test_data/source_PPMD.zip"), # PPMd is not supported by ZipFile
-    Path("tests/test_data/source_STORE.7z"),
-    Path("tests/test_data/source_LZMA_SOLID.7z"),
-    Path("tests/test_data/source_LZMA2_SOLID.7z"),
-    Path("tests/test_data/source_PPMD_SOLID.7z"),
-    Path("tests/test_data/source_BZIP2_SOLID.7z"),
-    Path("tests/test_data/source_STORE.rar"),
-    Path("tests/test_data/source_STORE.zip"),
-)
+from archivefile import ArchiveMemberNotAFileError
+
+if TYPE_CHECKING:
+    from archivefile import ArchiveFile
 
 unlicense = """\
 This is free and unencumbered software released into the public domain.
@@ -60,33 +36,32 @@ OTHER DEALINGS IN THE SOFTWARE.
 For more information, please refer to <https://unlicense.org>
 """
 
-# Alias the pre-configured parametrize function for reusability
-parametrize_files = pytest.mark.parametrize("file", files, ids=lambda x: x.name)
+
+def test_read_text_file(archive_file: ArchiveFile) -> None:
+    member = archive_file.read_text("pyanilist-main/UNLICENSE")
+    assert member.strip() == unlicense.strip()
 
 
-@parametrize_files
-def test_read_text_file(file: Path) -> None:
-    with ArchiveFile(file) as archive:
-        member = archive.read_text("pyanilist-main/UNLICENSE")
-        assert member.strip() == unlicense.strip()
+def test_read_bytes_file(archive_file: ArchiveFile) -> None:
+    member = archive_file.read_bytes("pyanilist-main/UNLICENSE")
+    assert member.decode().strip() == unlicense.strip()
 
 
-@parametrize_files
-def test_read_bytes_file(file: Path) -> None:
-    with ArchiveFile(file) as archive:
-        member = archive.read_bytes("pyanilist-main/UNLICENSE")
-        assert member.decode().strip() == unlicense.strip()
+def test_read_text_folder(archive_file: ArchiveFile) -> None:
+    filename = archive_file.file.as_posix()
+    message = rf"Archive member 'pyanilist-main/src/' in file {filename!r} exists but is not a file."
+    with pytest.raises(ArchiveMemberNotAFileError, match=message) as exc:
+        archive_file.read_text("pyanilist-main/src/")
+
+    assert exc.value.member == "pyanilist-main/src/"
+    assert exc.value.file == archive_file.file
 
 
-@parametrize_files
-def test_read_text_folder(file: Path) -> None:
-    with ArchiveFile(file) as archive:
-        member = archive.read_text("pyanilist-main/src/")
-        assert member == ""
+def test_read_bytes_folder(archive_file: ArchiveFile) -> None:
+    filename = archive_file.file.as_posix()
+    message = rf"Archive member 'pyanilist-main/src/' in file {filename!r} exists but is not a file."
+    with pytest.raises(ArchiveMemberNotAFileError, match=message) as exc:
+        archive_file.read_bytes("pyanilist-main/src/")
 
-
-@parametrize_files
-def test_read_bytes_folder(file: Path) -> None:
-    with ArchiveFile(file) as archive:
-        member = archive.read_bytes("pyanilist-main/src/")
-        assert member == b""
+    assert exc.value.member == "pyanilist-main/src/"
+    assert exc.value.file == archive_file.file

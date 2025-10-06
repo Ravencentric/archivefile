@@ -1,17 +1,20 @@
 from __future__ import annotations
 
-from archivefile._core import ArchiveFile
-from archivefile._enums import CompressionType
-from archivefile._models import ArchiveMember
-from archivefile._utils import is_archive
-from archivefile._version import Version, _get_version
-
-__version__ = _get_version()
-__version_tuple__ = Version(*[int(i) for i in __version__.split(".")])
+from ._core import ArchiveFile, is_archive
+from ._errors import (
+    ArchiveFileError,
+    ArchiveMemberNotAFileError,
+    ArchiveMemberNotFoundError,
+    UnsupportedArchiveFormatError,
+)
+from ._models import ArchiveMember
 
 __all__ = [
     "ArchiveFile",
+    "ArchiveFileError",
     "ArchiveMember",
+    "ArchiveMemberNotAFileError",
+    "ArchiveMemberNotFoundError",
+    "UnsupportedArchiveFormatError",
     "is_archive",
-    "CompressionType",
 ]

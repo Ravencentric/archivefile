@@ -7,34 +7,30 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = "Unlicense"
 keywords = [
-    "archive",
-    "archivefile",
-    "zipfile",
-    "tarfile",
-    "sevenzip",
-    "rarfile",
+  "archive",
+  "archivefile",
+  "zipfile",
+  "tarfile",
+  "sevenzip",
+  "7z",
+  "rarfile",
 ]
 classifiers = [
-    "License :: OSI Approved :: The Unlicense (Unlicense)",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: System :: Archiving",
-    "Topic :: System :: Archiving :: Compression",
-    "Typing :: Typed",
+  "License :: OSI Approved :: The Unlicense (Unlicense)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: System :: Archiving",
+  "Topic :: System :: Archiving :: Compression",
+  "Typing :: Typed",
 ]
-dependencies = [
-    "rarfile>=4.2",
-    "py7zr>=0.21.1",
-    "pydantic>=2.8.2",
-    "typing-extensions>=4.12.2",
-]
+dependencies = []
 
 [project.optional-dependencies]
-bigtree = ["bigtree>=0.19.3"]
-rich = ["rich>=13.7.1"]
-all = ["bigtree>=0.19.3", "rich>=13.7.1"]
+rar = ["rarfile>=4.2"]
+7z = ["py7zr>=1.0.0"]
 
 [project.urls]
 Repository = "https://github.com/Ravencentric/archivefile"
@@ -46,11 +42,13 @@ docs = [
   "mkdocs-material>=9.5.50",
   "mkdocstrings[python]>=0.27.0",
 ]
-test = [
-  "coverage[toml]>=7.6.10",
-  "pytest>=8.3.4",
+test = ["coverage[toml]>=7.6.10", "pytest>=8.3.4"]
+lint = [
+  "mypy>=1.16.0",
+  "ruff>=0.11.12",
+  "typing-extensions>=4.12.2",
+  { include-group = "test" },
 ]
-lint = ["mypy>=1.16.0", "ruff>=0.11.12", { include-group = "test" }]
 dev = [
   { include-group = "docs" },
   { include-group = "test" },
@@ -61,35 +59,62 @@ dev = [
 line-length = 120
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = [
+  "I",      # https://docs.astral.sh/ruff/rules/#isort-i
+  "RUF",    # https://docs.astral.sh/ruff/rules/#ruff-specific-rules-ruf
+  "UP",     # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+  "N",      # https://docs.astral.sh/ruff/rules/#pep8-naming-n
+  "D4",     # https://docs.astral.sh/ruff/rules/#pydocstyle-d
+  "B",      # https://docs.astral.sh/ruff/rules/#flake8-bugbear-b
+  "FBT",    # https://docs.astral.sh/ruff/rules/#flake8-boolean-trap-fbt
+  "C4",     # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
+  "EM",     # https://docs.astral.sh/ruff/rules/#flake8-errmsg-em
+  "ISC",    # https://docs.astral.sh/ruff/rules/multi-line-implicit-string-concatenation/
+  "PIE",    # https://docs.astral.sh/ruff/rules/#flake8-pie-pie
+  "RET",    # https://docs.astral.sh/ruff/rules/#flake8-raise-rse
+  "PL",     # https://docs.astral.sh/ruff/rules/#pylint-pl
+  "E",      # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+  "W",      # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
+  "FURB",   # https://docs.astral.sh/ruff/rules/#refurb-furb
+  "TC",     # https://docs.astral.sh/ruff/rules/#flake8-type-checking-tc
+  "TID253", # https://docs.astral.sh/ruff/rules/banned-module-level-imports/
+]
 fixable = ["ALL"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+# These modules are optional dependencies,
+# so we don't want to import them at the module level
+banned-module-level-imports = ["py7zr", "rarfile"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/*" = ["D", "FBT", "PL", "C416"]
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.mypy]
 strict = true
 pretty = true
+files = ["src/**/*.py", "tests/**/*.py"]
+enable_error_code = ["ignore-without-code"]
 
 [[tool.mypy.overrides]]
 module = ["rarfile"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-filterwarnings = ["ignore::DeprecationWarning:tarfile"]
-
-[tool.coverage.run]
-omit = ["src/archivefile/_version.py", "tests/*"]
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+filterwarnings = ["error"]
+log_cli_level = "INFO"
+testpaths = ["tests"]
 
 [tool.coverage.report]
 exclude_also = [
-    "if TYPE_CHECKING:",         # Only used for type-hints
-    "raise NotImplementedError", # Can't test what's not implemented
-    "def print_table",           # Function that pretty much calls another third party function
-    "def print_tree",            # Function that pretty much calls another third party function
-    "def __repr__",              # For debugging
+  "if TYPE_CHECKING:", # Only used for type-hints
 ]
-
 
 [build-system]
 requires = ["hatchling"]

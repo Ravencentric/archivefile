@@ -9,6 +9,7 @@ repo_url: https://github.com/Ravencentric/archivefile
 edit_uri: edit/main/docs/
 
 theme:
+  language: en
   icon:
     repo: fontawesome/brands/github
     edit: material/pencil 

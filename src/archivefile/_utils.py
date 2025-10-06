@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
-from tarfile import is_tarfile
-from zipfile import is_zipfile
+from typing import TYPE_CHECKING
 
-from py7zr import is_7zfile
-from rarfile import is_rarfile, is_rarfile_sfx
+from ._errors import ArchiveMemberNotFoundError
+from ._models import ArchiveMember
 
-from archivefile._models import ArchiveMember
-from archivefile._types import StrPath
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
+    from ._types import MemberLike, StrPath
 
 
 def realpath(path: StrPath) -> Path:
@@ -24,48 +26,68 @@ def realpath(path: StrPath) -> Path:
     -------
     Path
         The path after expanding the user's home directory and resolving any symbolic links.
+
     """
-    return path.expanduser().resolve() if isinstance(path, Path) else Path(path).expanduser().resolve()
+    return Path(path).expanduser().resolve()
 
 
-def is_archive(file: StrPath) -> bool:
-    """
-    Check whether the given archive file is a supported archive or not.
-
-    Parameters
-    ---------
-    file : StrPath
-        Path to the archive file.
-
-    Returns
-    -------
-    bool
-        True if the archive is supported, False otherwise.
-    """
-    file = realpath(file)
-
-    if file.exists():
-        return is_tarfile(file) or is_zipfile(file) or is_rarfile(file) or is_rarfile_sfx(file) or is_7zfile(file)
-    else:
-        return False
-
-
-def get_member_name(member: StrPath | ArchiveMember) -> str:
-    """Get the member name from a string, path, or ArchiveMember"""
+def get_member_name(member: MemberLike, /) -> str:
+    """Get the member name from a string, path, or ArchiveMember."""
 
     match member:
+        case str():
+            return member
+
         case ArchiveMember():
             return member.name
 
-        case Path():
-            return member.relative_to(member.anchor).as_posix()
+        case os.PathLike():
+            return Path(member).as_posix()
 
         case _:
-            return member
+            msg = (
+                f"Unsupported type for 'member'. Expected 'str', 'PathLike', or 'ArchiveMember', "
+                f"but got {type(member).__name__!r}."
+            )
+            raise TypeError(msg)
 
 
-def clamp_compression_level(level: int) -> int:
+def validate_members(requested: Iterable[MemberLike], /, *, available: Iterable[str], archive: Path) -> Sequence[str]:
     """
-    Pretty simple method to clamp compression level to a valid range
+    Validate and normalize requested archive members.
+
+    Parameters
+    ----------
+    requested : Iterable[str]
+        File names requested by the user. May contain duplicates.
+        Order will be preserved.
+    available : Iterable[str]
+        All available member names in the archive.
+    archive : str
+        Path to the archive file, used in error reporting.
+
+    Returns
+    -------
+    Sequence[str]
+        Normalized, validated file names. Preserves the input order and
+        removes duplicates.
+
+    Raises
+    ------
+    ArchiveMemberNotFoundError
+        If a requested file is not present in the archive.
+
     """
-    return max(0, min(level, 9))
+    available = set(available)
+    seen: set[str] = set()
+    out: list[str] = []
+
+    for req in requested:
+        name = get_member_name(req)
+        if name not in available:
+            raise ArchiveMemberNotFoundError(member=name, file=archive) from None
+        if name not in seen:
+            seen.add(name)
+            out.append(name)
+
+    return out

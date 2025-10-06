@@ -1,159 +1,87 @@
 from __future__ import annotations
 
-from pathlib import Path
+import re
+from typing import TYPE_CHECKING
 
 import pytest
-from archivefile import ArchiveFile
 
-modes = (
-    "w",
-    "w:",
-    "w:gz",
-    "w:bz2",
-    "w:xz",
-    "x:",
-    "x:",
-    "x:gz",
-    "x:bz2",
-    "x:xz",
-    "a",
-    "a:",
-)
+from archivefile import ArchiveFile, ArchiveMemberNotFoundError, UnsupportedArchiveFormatError
 
-extensions = ("zip", "cbz") + ("tar", "tar.bz2", "tar.gz", "tar.xz", "cbt") + ("7z", "cb7")
-
-files = (
-    Path("tests/test_data/source_BEST.rar"),
-    Path("tests/test_data/source_BZIP2.7z"),
-    Path("tests/test_data/source_BZIP2.zip"),
-    Path("tests/test_data/source_DEFLATE.zip"),
-    Path("tests/test_data/source_DEFLATE64.zip"),  # Deflate64 is not supported by ZipFile
-    Path("tests/test_data/source_GNU.tar"),
-    Path("tests/test_data/source_GNU.tar.bz2"),
-    Path("tests/test_data/source_GNU.tar.gz"),
-    Path("tests/test_data/source_GNU.tar.xz"),
-    Path("tests/test_data/source_LZMA.7z"),
-    Path("tests/test_data/source_LZMA.zip"),
-    Path("tests/test_data/source_LZMA2.7z"),
-    Path("tests/test_data/source_POSIX.tar"),
-    Path("tests/test_data/source_POSIX.tar.bz2"),
-    Path("tests/test_data/source_POSIX.tar.gz"),
-    Path("tests/test_data/source_POSIX.tar.xz"),
-    Path("tests/test_data/source_PPMD.7z"),
-    Path("tests/test_data/source_PPMD.zip"),  # PPMd is not supported by ZipFile
-    Path("tests/test_data/source_STORE.7z"),
-    Path("tests/test_data/source_LZMA_SOLID.7z"),
-    Path("tests/test_data/source_LZMA2_SOLID.7z"),
-    Path("tests/test_data/source_PPMD_SOLID.7z"),
-    Path("tests/test_data/source_BZIP2_SOLID.7z"),
-    Path("tests/test_data/source_STORE.rar"),
-    Path("tests/test_data/source_STORE.zip"),
-)
-
-# Alias the pre-configured parametrize function for reusability
-parametrize_files = pytest.mark.parametrize("file", files, ids=lambda x: x.name)
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
-def test_write_rar() -> None:
-    with pytest.raises(NotImplementedError):
-        with ArchiveFile("somerar.rar", "w") as archive:
-            archive.read_text("somefile.txt")
-
-    with pytest.raises(NotImplementedError):
-        with ArchiveFile("tests/test_data/source_BEST.rar", "w") as archive:
-            archive.print_tree()
+def test_non_existent_file_error(tmp_path: Path) -> None:
+    archive_path = tmp_path / "foo.zip"
+    with pytest.raises(FileNotFoundError, match=re.escape(str(archive_path))):
+        ArchiveFile(archive_path)
 
 
-def test_write_not_archive() -> None:
-    with pytest.raises(NotImplementedError):
-        with ArchiveFile("somefile.hello", "w") as archive:
-            archive.read_text("somefile.txt")
+def test_unsupported_archive_format_error(tmp_path: Path) -> None:
+    archive_path = tmp_path / "foo.zip"
+    archive_path.write_text("This is not a valid archive format.")
+    filename = archive_path.as_posix()
+    message = (
+        f"Unsupported or unrecognized archive format for file: {filename!r}.\n"
+        "If this is a 7z or rar archive, support is available via the optional "
+        "extras 'archivefile[7z]' and 'archivefile[rar]'."
+    )
+    with pytest.raises(UnsupportedArchiveFormatError, match=re.escape(message)) as exc:
+        ArchiveFile(archive_path)
+
+    assert exc.value.file == archive_path
 
 
-def test_write_without_write_mode() -> None:
-    with pytest.raises(FileNotFoundError):
-        with ArchiveFile("somefile.zip", "r") as archive:
-            archive.read_text("somefile.txt")
+def test_bad_type_member(archive_file: ArchiveFile) -> None:
+    message = "Unsupported type for 'member'. Expected 'str', 'PathLike', or 'ArchiveMember', but got 'object'."
+    with pytest.raises(TypeError, match=message):
+        archive_file.get_member(object())  # type: ignore[arg-type]
 
 
-def test_write_mode_x_sevenzip(tmp_path: Path) -> None:
-    file = tmp_path / "archive.7z"
-    with ArchiveFile(file, "x") as archive:
-        archive.write_text("abc1234", arcname="a.txt")
+def test_missing_member(archive_file: ArchiveFile) -> None:
+    filename = archive_file.file.as_posix()
+    message = re.escape(f"Archive member 'non-existent.member' not found in file: {filename!r}")
+    with pytest.raises(ArchiveMemberNotFoundError, match=message) as exc:
+        archive_file.get_member("non-existent.member")
 
-    with pytest.raises(FileExistsError):
-        with ArchiveFile(file, "x") as archive:
-            archive.write_text("abc1234", arcname="a.txt")
-
-
-def test_existing_unsupported_archive(tmp_path: Path) -> None:
-    file = tmp_path / "archive.yaml"
-    file.touch()
-    with pytest.raises(NotImplementedError):
-        with ArchiveFile(file, "x") as archive:
-            archive.write_text("abc1234", arcname="a.txt")
+    assert exc.value.file == archive_file.file
 
 
-@parametrize_files
-def test_missing_member(file: Path) -> None:
-    with pytest.raises(KeyError):
-        with ArchiveFile(file) as archive:
-            archive.get_member("non-existent.member")
+def test_missing_member_in_read_bytes(archive_file: ArchiveFile) -> None:
+    filename = archive_file.file.as_posix()
+    message = re.escape(f"Archive member 'non-existent.member' not found in file: {filename!r}")
+    with pytest.raises(ArchiveMemberNotFoundError, match=message) as exc:
+        archive_file.read_bytes("non-existent.member")
+
+    assert exc.value.member == "non-existent.member"
+    assert exc.value.file == archive_file.file
 
 
-@parametrize_files
-def test_missing_member_in_read_bytes(file: Path) -> None:
-    with pytest.raises(KeyError):
-        with ArchiveFile(file) as archive:
-            archive.read_bytes("non-existent.member")
+def test_missing_member_in_read_text(archive_file: ArchiveFile) -> None:
+    filename = archive_file.file.as_posix()
+    message = re.escape(f"Archive member 'non-existent.member' not found in file: {filename!r}")
+    with pytest.raises(ArchiveMemberNotFoundError, match=message) as exc:
+        archive_file.read_text("non-existent.member")
+
+    assert exc.value.member == "non-existent.member"
+    assert exc.value.file == archive_file.file
 
 
-@parametrize_files
-def test_missing_member_in_read_text(file: Path) -> None:
-    with pytest.raises(KeyError):
-        with ArchiveFile(file) as archive:
-            archive.read_text("non-existent.member")
+def test_missing_member_in_extract(archive_file: ArchiveFile) -> None:
+    filename = archive_file.file.as_posix()
+    message = re.escape(f"Archive member 'non-existent.member' not found in file: {filename!r}")
+    with pytest.raises(ArchiveMemberNotFoundError, match=message) as exc:
+        archive_file.extract("non-existent.member")
+
+    assert exc.value.member == "non-existent.member"
+    assert exc.value.file == archive_file.file
 
 
-@parametrize_files
-def test_missing_member_in_extract(file: Path) -> None:
-    with pytest.raises(KeyError):
-        with ArchiveFile(file) as archive:
-            archive.extract("non-existent.member")
+def test_missing_member_in_extractall(archive_file: ArchiveFile, tmp_path: Path) -> None:
+    filename = archive_file.file.as_posix()
+    message = re.escape(f"Archive member 'non-existent.member' not found in file: {filename!r}")
+    with pytest.raises(ArchiveMemberNotFoundError, match=message) as exc:
+        archive_file.extractall(destination=tmp_path, members=["non-existent.member"])
 
-
-@parametrize_files
-def test_missing_member_in_extractall(file: Path, tmp_path: Path) -> None:
-    with pytest.raises(KeyError):
-        with ArchiveFile(file) as archive:
-            archive.extractall(destination=tmp_path, members=["non-existent.member"])
-
-
-@pytest.mark.parametrize("extension", extensions)
-@pytest.mark.parametrize("mode", modes)
-def test_write_not_a_file(tmp_path: Path, mode: str, extension: str) -> None:
-    with pytest.raises(ValueError):
-        archive_file = tmp_path / f"somefile.{extension}"
-        with ArchiveFile(archive_file, mode) as archive:
-            archive.write(tmp_path)
-
-
-@pytest.mark.parametrize("extension", extensions)
-@pytest.mark.parametrize("mode", modes)
-def test_write_not_a_dir(tmp_path: Path, mode: str, extension: str) -> None:
-    with pytest.raises(ValueError):
-        archive_file = tmp_path / f"somefile.{extension}"
-        file = tmp_path / "somefile.txt"
-        file.touch()
-        with ArchiveFile(archive_file, mode) as archive:
-            archive.writeall(file)
-
-
-@pytest.mark.parametrize("extension", extensions)
-@pytest.mark.parametrize("mode", modes)
-def test_writeall_not_dir(tmp_path: Path, mode: str, extension: str) -> None:
-    archive_dir = Path("src/archivefile").resolve()
-    with pytest.raises(ValueError):
-        dir = tmp_path / f"somefile.{extension}"
-        with ArchiveFile(dir, mode) as archive:
-            archive.writeall(archive_dir, root=tmp_path)
+    assert exc.value.member == "non-existent.member"
+    assert exc.value.file == archive_file.file

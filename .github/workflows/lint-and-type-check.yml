@@ -46,8 +46,11 @@ jobs:
           enable-cache: false
           python-version: "3.13"
 
+      - name: Install project
+        run: uv sync --all-extras
+
       - name: Run mypy
-        run: uv run mypy .
+        run: uv run mypy
 
       - name: Run ruff lint
         run: uv run ruff check .

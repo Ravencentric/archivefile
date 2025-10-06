@@ -49,13 +49,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install the project
-        run: uv sync --all-extras
+      - name: Run tests without extras
+        run: uv run coverage run -m pytest -vv
 
-      - name: Run tests and generate coverage
-        run: |
-          uv run coverage run -m pytest -vv
-          uv run coverage xml
+      - name: Run tests with extras
+        run: uv run --all-extras coverage run --append -m pytest -vv
+
+      - name: Show coverage
+        run: uv run coverage report -m
+
+      - name: Generate coverage
+        run: uv run coverage xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
