@@ -212,8 +212,10 @@ class RarFileAdapter(BaseArchiveAdapter):
                     names.add(name)
                 else:
                     raise KeyError(f"{name} not found in {self._file}")
+            self._rarfile.extractall(path=destination, members=names, pwd=self._password)
+        else:
+            self._rarfile.extractall(path=destination, pwd=self._password)
 
-        self._rarfile.extractall(path=destination, members=names, pwd=self._password)
         return destination
 
     def read_bytes(self, member: StrPath | ArchiveMember) -> bytes:

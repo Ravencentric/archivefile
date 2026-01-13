@@ -68,12 +68,14 @@ def test_extractall(file: Path, tmp_path: Path) -> None:
         dest = tmp_path / uuid4().hex
         archive.extractall(path=dest)
         control = tuple((dest / "pyanilist-main").rglob("*"))
+        control_paths_rel = tuple(member.relative_to(dest) for member in control)
 
     with ArchiveFile(file) as archive:
         dest2 = tmp_path / uuid4().hex
         archive.extractall(destination=dest2)
-        members = tuple((dest / "pyanilist-main").rglob("*"))
-        assert control == members
+        members = tuple((dest2 / "pyanilist-main").rglob("*"))
+        member_paths_rel = tuple(member.relative_to(dest2) for member in members)
+        assert control_paths_rel == member_paths_rel
 
 
 @parametrize_files
